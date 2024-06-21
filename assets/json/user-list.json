@@ -1,0 +1,54 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "user": "Ahmad",
+      "role": "Staff",
+      "username": "ahmad11",
+      "email": "PM11",
+      "createdby":"Naz",
+      "createddate":"28/10/2022",
+      "deactivatedate":"28/1/2023",
+      "status": 3,
+      "avatar": ""
+    },
+    {
+      "id": 2,
+      "user": "Siti Aisyah",
+      "role": "Manager",
+      "username": "SitiAisy",
+      "email": "PM12",
+      "createdby":"Hanif",
+      "createddate":"28/11/2022",
+      "deactivatedate":"28/2/2023",
+      "status": 2,
+      "avatar": "10.png"
+    },
+    {
+      "id": 3,
+      "user": "Ali Ahmad",
+      "role": "Admin",
+      "username": "Ali1",
+      "email": "PA12",
+      "createdby":"Eiman",
+      "createddate":"28/12/2022",
+      "deactivatedate":"28/3/2023",
+      "status": 2,
+      "avatar": "1.png"
+    },
+    {
+      "id": 3,
+      "user": "Hassan",
+      "role": "CustomerService",
+      "username": "hassanH",
+      "email": "PCS11",
+      "createdby":"Faiz",
+      "createddate":"28/1/2023",
+      "deactivatedate":"28/4/2023",
+      "status": 3,
+      "avatar": ""
+    }
+
+
+  ]
+}

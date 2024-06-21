@@ -1,0 +1,48 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "user": "Ahmad",
+      "role": "Staff",
+      "username": "ahmad11",
+      "email": "Ahmad11@email.com",
+      "createdby":"Naz",
+      "createddate":"28/10/2022",
+      "deactivatedate":"28/1/2023",
+      "status": 3,
+      "Store Code": "001",
+      "Store Name": "Parkson 1"
+    },
+    {
+      "id": 2,
+      "user": "Siti Aisyah",
+      "role": "Manager",
+      "username": "SitiAisy",
+      "email": "SitiAisy@email.com",
+      "createdby":"Hanif",
+      "createddate":"28/11/2022",
+      "deactivatedate":"28/2/2023",
+      "status": 2,
+      "avatar": "10.png",
+      "Store Code": "002",
+      "Store Name": "Parkson 2"
+    },
+    {
+      "id": 3,
+      "user": "Ali Ahmad",
+      "role": "Admin",
+      "username": "Ali1",
+      "email": "AliiAhm@email.comt",
+      "createdby":"Eiman",
+      "createddate":"28/12/2022",
+      "deactivatedate":"28/3/2023",
+      "status": 3,
+      "avatar": "1.png",
+      "Store Code": "003",
+      "Store Name": "Parkson 3"
+    },
+
+
+
+  ]
+}
