@@ -1,0 +1,212 @@
+<?php
+  class Login extends CI_Controller
+  {
+
+    function __construct()
+    {
+      parent:: __construct();
+      $this->load->model('auth/Login_model');
+      $this->load->model('logs/ActivityLog_Model');
+      $this->load->model('App_logger_model');
+      // $this->load->library('encryption');
+
+
+      //CSRF PROTECTION\\
+      $this->global_data['csrf'] =
+      [
+        'name' => $this->security->get_csrf_token_name(),
+        'hash' => $this->security->get_csrf_hash()
+      ];
+      //CSRF PROTECTION\\
+
+      $this->global_data['UserId']      = $this->session->userdata('UserId');
+      $this->global_data['Fullname']    = $this->session->userdata('Fullname');
+      $this->global_data['Role']        = $this->session->userdata('Role');
+
+      $this->global_data['CreatedDate'] = date("Y-m-d H:i:s", time() );
+      $this->global_data['CreatedBy']   = $this->global_data['UserId'];
+      $this->global_data['AppType']     = 2;
+      $this->global_data['UpdatedDate']  = date("Y-m-d H:i:s", time() ); //for edit part
+      $this->global_data['UpdatedBy']    = $this->global_data['UserId'];
+    }
+
+    public function index()
+    {
+      // $this->load->view('templates/header');
+     $data = array_merge($this->global_data);
+
+     $data['header']=$this->load->view('templates/auth-header',"",true);
+     $data['footer']=$this->load->view('templates/auth-footer',"",true);
+
+     // $data['firstLogin'] = $this->Login_model->get_userFlag();
+     $this->load->view('auth/login', $data);
+    }
+
+      public function validating()
+      {
+        $data = array_merge($this->global_data);
+
+        $data['IpAddress']       = $this->input->ip_address();
+        $data['OperatingSystem'] = $this->agent->platform();
+        $data['Browser']         = $this->agent->version();
+
+        $this->form_validation->set_rules('loginId', 'Login ID', 'required');
+        $this->form_validation->set_rules('Password', 'Password', 'required');
+
+        $get = $this->input->post();
+
+        if($this->form_validation->run() == TRUE){
+
+          if ($data['loggerid'] = $this->App_logger_model->insert_app_logger_data($data))
+          {
+            if ($LoginId  = $this->Login_model->get_loginId($get))
+            {
+              if (!isset($LoginId)) {
+                $status    = false;
+                $response  = "User doesn't exist!";
+                $errorcode = 404;
+              } else {
+
+                $Password  = $this->Login_model->get_password($get);
+
+                if (!isset($Password)) {
+                  $status    = false;
+                  $response  = "Your ID or password is wrong!";
+                  $errorcode = 400;
+                } else {
+                  $this->session->set_userdata('UserId', $Password->UserId);
+                  $this->session->set_userdata('Fullname', $Password->Fullname);
+                  $this->session->set_userdata('Role', $Password->Role);
+                  $this->session->set_userdata('RoleId', $Password->UserRoleId);
+                  $this->session->set_userdata('is_logged_in', true);
+                  $this->session->set_userdata('LoginId', $Password->LoginId);
+
+                  $status     = true;
+                  $response   = "Validating..";
+                  $errorcode  = 200;
+                  $actmsg     = "$Password->Fullname Successfuly Login ";
+                }
+              }
+            } else {
+                  $status     = false;
+                  $response   = [
+                    "type"    => "authentication",
+                    "error"   => array('error' => 'Something went wrong. Please try again later.'),
+                  ];
+                  $errorcode  = 500;
+                  $actmsg     = " is trying to Login. Failed.";
+                }
+              } else
+              {
+                $status    = false;
+                $response  = [
+                  "type"   => "authentication",
+                  "error"  => array('error' => 'Something went wrong. Please try again later.'),
+                ];
+                $errorcode = 500;
+                $actmsg    = " is trying to Login. Applogger update failed.";
+              }
+              $act = [
+                'UserId'           => $Password->UserId,
+                'ActivityTypeId'   => 3,
+                'ActivityDetails'  => $data['Fullname'].$actmsg,
+                'ActiveDate'       => date('Y-m-d h:i:s'),
+                'IpAddress'        => $data['IpAddress'],
+                'OperatingSystem'  => $data['OperatingSystem'],
+                'Browser'          => $data['Browser'],
+              ];
+
+              $this->ActivityLog_Model->insert_activity($act);
+
+              }else {
+                $status    = false;
+                $response  = $this->form_validation->error_array();
+                $errorcode = 400;
+              }
+
+              $result['token']    = $data['csrf']['hash'];
+              $result['status']   = $status;
+              $result['message']  = $response;
+
+              echo json_encode($result);
+          }
+
+          public function logout()
+          {
+            $this->session->sess_destroy();
+            redirect('auth/Login');
+          }
+  }
+
+  // ACTIVITY
+  ////////////Add Activity/////////////////////////
+  // $act['UserId']          = $data['UserId']; //'global'
+  // $act['UserTypeId']      = $data['UserTypeId']; //'global'
+  // $act['ActivityTypeId']  = 10;//Client change Password
+  // $act['ActivityDetails'] = 'Client ('.$arr_changepassword->Username.') Change Password';
+  //
+  // $this->Activity_model->addActivity($act);
+
+  // $loggerid = $this->App_logger_model->insert_app_logger_data($data);
+
+  // $data['AppLoggerId'] = $checkgn->AppLoggerId;
+  // $this->App_logger_model->update_app_logger_data($data);
+
+ ?>
+
+
+
+
+
+public function validating_backup()
+              {
+                $data = array_merge($this->global_data);
+            
+                $this->form_validation->set_rules('loginId', 'Login ID', 'required');
+                $this->form_validation->set_rules('Password', 'Password', 'required');
+            
+                $get = $this->input->post();
+            
+                if($this->form_validation->run() == TRUE){
+            
+                  $LoginId  = $this->Login_model->get_loginId($get);
+            
+                  if (!isset($LoginId)) {
+                    $status    = false;
+                    $response  = "User doesn't exist!";
+                    $errorcode = 404;
+                  }else {
+            
+                    // $this->encryption->decrypt($Password);
+                    $Password  = $this->Login_model->get_password($get);
+                    // $this->encryption->decrypt($Password);
+                    // $pass= $this->encryption->decrypt($Password);
+            
+                    if (!isset($Password)) {
+                      $status    = false;
+                      $response  = "Your ID or password is wrong!";
+                      $errorcode = 400;
+                    }else {
+                      $this->session->set_userdata('UserId', $Password->UserId);
+                      $this->session->set_userdata('Fullname', $Password->Fullname);
+                      $this->session->set_userdata('Role', $Password->Role);
+                      $this->session->set_userdata('RoleId', $Password->UserRoleId);
+                      $this->session->set_userdata('is_logged_in', true);
+            
+                      $status    = true;
+                      $response  = "Validating..";
+                      $errorcode = 200;
+                    }
+                  }
+                }else {
+                  $status    = false;
+                  $response  = $this->form_validation->error_array();
+                  $errorcode = 400;
+                }
+            
+                $result['token']    = $data['csrf']['hash'];
+                $result['status']   = $status;
+                $result['message']  = $response;
+            
+                echo json_encode($result);
+            }

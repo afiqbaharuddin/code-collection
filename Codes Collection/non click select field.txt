@@ -1,0 +1,44 @@
+  <div class="row mb-3">
+                              <label class="col-sm-2 col-form-label" for="">Voucher Status</label>
+                              <div class="col-sm-10">
+                              <select id="status" name="status" class="form-select">
+                                <option value="">Select Status</option>
+
+                                <?php
+                                $nonclick = [1,2,4,7,8];
+                                 foreach ($status as $row) {
+                                  if ($row->VoucherStatusId == $voucher->VoucherStatusId){
+                                    $select = 'selected';
+                                  }else {
+                                    $select = '';
+                                  }
+                                  if ($voucher->VoucherStatusId == 6) {
+                                    $unblockallow = 1;
+                                    if ($unblockallow == 1) {
+                                      $nonclick = [2,4,7,8];
+                                      if (in_array($row->VoucherStatusId,$nonclick)){
+                                        $diss = 'disabled';
+                                      }else {
+                                        $diss = '';
+                                      }
+                                    }else {
+                                      if (in_array($row->VoucherStatusId,$nonclick)){
+                                        $diss = 'disabled';
+                                      }else {
+                                        $diss = '';
+                                      }
+                                    }
+                                  }else {
+                                    if (in_array($row->VoucherStatusId,$nonclick)){
+                                      $diss = 'disabled';
+                                    }else {
+                                      $diss = '';
+                                    }
+                                  }
+
+                                    ?>
+                                  <option value="<?php echo $row->VoucherStatusId; ?>"<?php echo $select.' '.$diss; ?>><?php echo $row->VoucherStatusName; ?></option>
+                                <?php } ?>
+                              </select>
+                            </div>
+                          </div>

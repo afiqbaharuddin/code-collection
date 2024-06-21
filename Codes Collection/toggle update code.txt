@@ -1,0 +1,65 @@
+<label class="switch me-0">
+                        <?php if($pay->status == 1){
+                          $check = 'checked';
+                        } else{
+                          $check = '';
+                        } 
+                        ?>
+                        <input id="check_<?php echo $i; ?>" type="checkbox" name="status" class="switch-input toggle_switch" data-num="<?php echo $i; ?>" value="<?php echo $pay->status ?>" <?php echo $check; ?>/>
+                        <span class="switch-toggle-slider">
+                          <span class="switch-on"></span>
+                          <span class="switch-off"></span>
+                        </span>
+                        <span class="switch-label"></span>
+                      </label>
+
+
+//ajax
+$('.toggle_switch').change(function(){
+          var num = $(this).data('num');
+          var csrfName = $('.txt_csrfname').attr('name');
+          var csrfHash = $('.txt_csrfname').val();
+
+          if($(this).is(":checked")){
+            $('#check_'+num).val('1');
+          } else{
+            $('#check_'+num).val('2');
+          }
+
+          var status = $(this).val();
+          var paymentId = $('#pay_'+num).val();
+
+          $.ajax({
+            type: "post",
+            url: "<?php echo base_url(); ?>machine/paymentmethod/payment",
+            data: {status: status, paymentId: paymentId, [csrfName]: csrfHash},
+            dataType: 'json',
+            success: function(data)
+            {
+              $('.txt_csrfname').val(data.token);
+            }
+
+          });
+
+        });
+
+
+
+public function payment()
+	{
+		$data = array_merge($this->global_data);
+		$status = $this->input->post('status');
+		$paymentId = $this->input->post('paymentId');
+	 	$this->Paymentmethod_model->updateStatus($status, $paymentId);
+
+		$result['token'] = $data['csrf']['hash'];
+		echo json_encode($result);
+	}
+
+
+
+function updateStatus($status, $paymentId){
+      $this->db->set('status_id', $status);
+      $this->db->where('machine_payment_id', $paymentId);
+      $this->db->update('machine_payment');
+    }

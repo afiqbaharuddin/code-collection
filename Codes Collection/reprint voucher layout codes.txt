@@ -1,0 +1,225 @@
+<style media="screen">
+  #invoice-POS{
+    box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
+    padding:2mm;
+    margin: 0 auto;
+    width: 78mm;
+    background: #FFF;
+    margin-bottom: 50px;
+
+
+    ::selection {background: #f31544; color: #FFF;}
+    ::moz-selection {background: #f31544; color: #FFF;}
+    h1{
+      font-size: 1.5em;
+      color: #222;
+    }
+    h2{font-size: .9em;}
+    h3{
+      font-size: 1.2em;
+      font-weight: 300;
+      line-height: 2em;
+    }
+    p{
+      font-size: .7em;
+      color: #666;
+      line-height: 1.2em;
+    }
+
+    #top, #mid,#bot{ /* Targets all id with 'col-' */
+      border-bottom: 1px solid #EEE;
+    }
+
+    #top{min-height: 100px;}
+    #mid{min-height: 80px;}
+    #bot{ min-height: 50px;}
+
+    #top .logo{
+      //float: left;
+      height: 60px;
+      width: 60px;
+      background: url() no-repeat;
+      background-size: 60px 60px;
+    }
+    .clientlogo{
+      float: left;
+      height: 60px;
+      width: 60px;
+      background: url() no-repeat;
+      background-size: 60px 60px;
+      border-radius: 50px;
+    }
+    .info{
+      display: block;
+      //float:left;
+      margin-left: 0;
+    }
+    .title{
+      float: right;
+    }
+    .title p{text-align: right;}
+    table{
+      width: 100%;
+      border-collapse: collapse;
+    }
+    td{
+      //padding: 5px 0 5px 15px;
+      //border: 1px solid #EEE
+    }
+    .tabletitle{
+      padding: 5px;
+      font-size: .5em;
+      background: #EEE;
+    }
+    .service{border-bottom: 1px solid #EEE;}
+    .item{width: 24mm;}
+    .itemtext{font-size: .5em;}
+
+    #legalcopy{
+      margin-top: 5mm;
+    }
+  }
+  .text-center{
+    text-align: center;
+  }
+  .mtb{
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  .mtbsmall{
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  .t-title{
+    font-size: 13px;
+    font-weight: bold;
+  }
+  .s-info{
+    font-size: 13px;
+  }
+
+  @media print {
+    .text-center{
+      text-align: center;
+    }
+    .mtb{
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    .mtbsmall{
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+    .t-title{
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .s-info{
+      font-size: 13px;
+    }
+  }
+</style>
+
+<!-- <div id="invoice-POS">
+  <div id="bot">
+    <center id="top" class="mtb">
+      <strong>Item Name</strong><br>
+      <?php echo $items->ItemsName; ?>
+    </center>
+    <center id="top" class="mtb">
+      <strong>Variation</strong><br>
+      <?php echo $variation->VariationItemName; ?>
+    </center>
+    <center id="top" class="mtb">
+      <strong>Choice(s)</strong><br>
+      <?php $i = 1; foreach ($choice as $choicerow) {
+        if ($i == 1) {
+          echo $choicerow->ChoiceItemName;
+        }else{
+          echo ", ".$choicerow->ChoiceItemName;
+        }
+      $i++; } ?>
+    </center>
+    <center id="top" class="mtb">
+      <strong>Remark</strong><br>
+      <?php if (empty($items->Remark)) { echo "-"; }else{ echo $items->Remark; } ?>
+    </center>
+    <center id="top" class="mtb">
+      <strong style="font-size:8px;">POWERED BY</strong><br>
+      <img src="<?php echo base_url() ?>ho-assets/img/logo/hello-order-black.jpeg" height="20">
+    </center>
+  </div>
+</div> -->
+
+<div id="invoice-POS">
+
+  <div id="bot">
+
+    <div class="row">
+      <div class="col-md-12" id="printTable">
+        <div class="col-md-12 mtb text-center">
+          <strong><?php echo $title; ?></strong>
+        </div>
+        <div class="col-md-12 text-center small-font">
+          <div class="topbox">
+            <table width="100%">
+              <tr>
+                <td width="40%">Order No</td>
+                <td width="60%">: <?php echo $items->OrderNumber; ?></td>
+              </tr>
+              <tr>
+                <td width="40%">Date / Time</td>
+                <td width="60%">: <?php echo date("d-m-Y h:i A", strtotime($items->OrderStatusDateTime)); ; ?></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-12 mb-4 small-font">
+        <div class="col-md-12 small-font">
+          <hr>
+          <table width="100%" class="table">
+            <tr>
+              <th width="90%" class="text-left"><span class="t-title">Item</span></th>
+              <th width="10%" class="text-center"><span class="t-title">Qty</span></th>
+            </tr>
+            <tr>
+              <th colspan="2"><hr></th>
+            </tr>
+            <tbody>
+              <tr>
+                <td>
+                  <strong><?php echo $items->ItemsName; ?></strong><br>
+                  <?php if (!empty($variation)) { echo "Variation: <strong>".$variation->VariationItemName."</strong> <br>"; } ?>
+                  <?php if (!empty($choice)) { ?>
+                    Choice: <strong><?php $i = 1; foreach ($choice as $choicerow) { if ($i == 1) { echo $choicerow->ChoiceItemName; }else{ echo ", ".$choicerow->ChoiceItemName; } $i++; } ?> </strong><br>
+                  <?php } ?>
+                  <?php if (!empty($row->Remark)) { echo "Remark: <strong>".$row->Remark."</strong>"; } ?>
+                </td>
+                <td>
+                  <?php echo $items->Quantity; ?>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2"><hr></td>
+              </tr>
+            </tbody>
+            <tr>
+              <td width="90%" class="text-center"><span class="t-title"><?php echo $this->lang->line('total')?></span></td>
+              <td width="10%" ><span class="t-title"><?php echo $items->Quantity; ?></span></td>
+            </tr>
+          </table>
+        </div>
+        <!-- <div class="col-md-12 mt-4 text-center">
+          <strong>POWERED BY</strong> <br>
+          <img src="<?php echo base_url() ?>ho-assets/img/logo/hello-order-black.jpeg" height="40">
+        </div> -->
+      </div>
+    </div>
+  </div><!--End InvoiceBot-->
+</div><!--End Invoice-->
+
+
+<script src="<?php echo base_url() ?>ho-assets/js/common_scripts.min.js"></script>
+<script type="text/javascript">
+window.print();
+</script>

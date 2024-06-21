@@ -1,0 +1,855 @@
+<?php
+  class Voucher extends CI_Controller
+  {
+
+    function __construct()
+    {
+      parent:: __construct();
+      $this->load->model('voucher/voucher_Model');
+      $this->load->model('voucher/gift_Model');
+      $this->load->model('voucher/predefined_Model');
+      $this->load->model('logs/ActivityLog_Model');
+      $this->load->model('logs/VoucherLog_Model');
+      $this->load->model('App_logger_model');
+
+      if ($this->session->userdata('is_logged_in') == false)
+      {
+        redirect();
+      }
+
+      //CSRF PROTECTION\\
+      $this->global_data['csrf'] = [
+        'name' => $this->security->get_csrf_token_name(),
+        'hash' => $this->security->get_csrf_hash()
+      ];
+      //CSRF PROTECTION\\
+
+      $this->global_data['UserId']      = $this->session->userdata('UserId');
+      $this->global_data['Fullname']    = $this->session->userdata('Fullname');
+      $this->global_data['Role']        = $this->session->userdata('Role');
+
+      $this->global_data['AppType']     = 2;
+      $this->global_data['CreatedDate'] = date("Y-m-d H:i:s", time() );
+      $this->global_data['CreatedBy']   = $this->global_data['UserId'];
+      $this->global_data['UpdatedDate']  = date("Y-m-d H:i:s", time() );
+      $this->global_data['UpdatedBy']    = $this->global_data['UserId'];
+      // $this->output->enable_profiler(TRUE);
+  	}
+
+    function promotionlist()
+    {
+       $data = array_merge($this->global_data);
+
+       $data['header']         =  $this->load->view('templates/main-header',"",true);
+       $data['topbar']         =  $this->load->view('templates/main-topbar',"",true);
+       $data['sidebar']        =  $this->load->view('templates/main-sidebar',"",true);
+       $data['footer']         =  $this->load->view('templates/main-footer',"",true);
+       $data['bottom']         =  $this->load->view('templates/main-bottom',"",true);
+
+       $data['filterstatus']             =   $this->voucher_Model->get_filterstatus()->result();
+       $data['vouchers_issued_today']    = $this->voucher_Model->get_voucher_issued_today();
+       $data['vouchers_redeem_today']    = $this->voucher_Model->get_voucher_redeem_today();
+       $data['vouchers_void_today']      = $this->voucher_Model->get_voucher_void_today();
+
+       // $data['importid']                  = $this->voucher_Model->get_voucher_import();
+
+
+
+       $this->load->view('voucher/promotion_voucher_list', $data);
+    }
+
+    public function voucherlisting(){
+      $data = array_merge($this->global_data);
+
+      $post = $this->input->post();
+      $list  = $this->voucher_Model->get_datatables($post);
+      $table = array();
+      $no    = $post['start'];
+
+      if (isset($post['filter_status']) && $post['filter_status'] != null) {
+        $filterstatus = implode(",",$post['filter_status']);
+        $this->session->set_userdata('Filter_Status',$filterstatus);
+      }
+
+      $this->session->set_userdata('Filter_StoreCode',$post['filterStoreCode']);
+      $this->session->set_userdata('Filter_Pos',$post['filterPosNumber']);
+      $this->session->set_userdata('Filter_ReceiptNo',$post['filterReceiptNumber']);
+      $this->session->set_userdata('Filter_DateFrom',$post['date_from']);
+      $this->session->set_userdata('Filter_DateTo',$post['date_to']);
+
+      foreach ($list as $field) {
+
+        $no++;
+        $row   = array();
+  			// $row[] = $no;
+        $row[] = $field->StoreCode;
+  			$row[] = $field->VouchersNumber;
+  			$row[] = date('Y-m-d H:i:s', strtotime($field->CreatedDate));
+        $row[] = $field->VoucherName;
+        $row[] = $field->VouchersValue;
+        $row[] = date('Y-m-d', strtotime($field->ExpDate));
+
+        // $row[] = $field->VoucherStatusName;
+        $row[] =  '<div class="">
+                    <span class="badge bg-label-'.$field->VoucherStatusColor.'">'.$field->VoucherStatusName.'</span>
+                  </div>';
+
+        $row[] = '<a href="'.base_url().'voucher/VoucherDetails/promotiondetails/'.$field->VoucherId.'">
+                    <div class="d-inline-block- text-nowrap">
+                      <button class="btn btn-sm btn-icon">
+                        <i class="bx bx-edit"></i>
+                      </button>
+                    </div>
+                  </a>';
+        $table[] = $row;
+      }
+
+      $output = array(
+        "draw"                => $post['draw'],
+        "recordsTotal"        => $this->voucher_Model->count_all($post),
+        "recordsFiltered"     => $this->voucher_Model->count_filtered($post),
+        "data"                => $table,
+        $data['csrf']['name'] => $data['csrf']['hash']
+      );
+      echo json_encode($output);
+    }
+
+
+    function giftlist()
+    {
+      $data = array_merge($this->global_data);
+
+       // $this->load->view('templates/header');
+       $data['header']            = $this->load->view('templates/main-header',"",true);
+       $data['topbar']            = $this->load->view('templates/main-topbar',"",true);
+       $data['sidebar']           = $this->load->view('templates/main-sidebar',"",true);
+       $data['footer']            = $this->load->view('templates/main-footer',"",true);
+       $data['bottom']            = $this->load->view('templates/main-bottom',"",true);
+
+       $data['filterstatus']            = $this->gift_Model->get_filterstatus()->result();
+       $data['evouchers_sold_today']    = $this->gift_Model->get_evoucher_sold_today();
+       $data['evouchers_void_today']    = $this->gift_Model->get_evoucher_void_today();
+       $data['evouchers_redeem_today']  = $this->gift_Model->get_evoucher_redeem_today();
+       $data['evouchers_upload_today']  = $this->gift_Model->get_evoucher_upload_today();
+
+
+       $this->load->view('voucher/gift_voucher_list', $data);
+    }
+
+    public function giftlisting(){
+      $data = array_merge($this->global_data);
+
+      $post = $this->input->post();
+
+      $list  = $this->gift_Model->get_datatables($post);
+      $table = array();
+      $no    = $post['start'];
+
+      if (isset($post['filter_status']) && $post['filter_status'] != null) {
+        $filterstatus = implode(",",$post['filter_status']);
+        $this->session->set_userdata('Filter_Status',$filterstatus);
+      }
+
+      $this->session->set_userdata('Filter_StoreCode',$post['filterstoreCode']);
+      $this->session->set_userdata('Filter_Pos',$post['filterposnumber']);
+      $this->session->set_userdata('Filter_ReceiptNo',$post['filterreceiptnumber']);
+      $this->session->set_userdata('Filter_DateFrom',$post['date_from']);
+      $this->session->set_userdata('Filter_DateTo',$post['date_to']);
+
+
+      foreach ($list as $field) {
+
+        $no++;
+        $row   = array();
+  			// $row[] = $no;
+  			$row[] = $field->VouchersNumber;
+        // $row[] = $field->ReceiptNumber;
+  			$row[] = date('Y-m-d h:i A', strtotime($field->CreatedDate));
+        $row[] = $field->VoucherName;
+        $row[] = $field->VoucherValueGift;
+        $row[] = date('Y-m-d', strtotime($field->ExpDate));
+
+        $row[] = '<div class="">
+                    <span class="badge bg-label-'.$field->VoucherStatusColor.'">'.$field->VoucherStatusName.'</span>
+                  </div>';
+
+        $row[] = '<a href="'.base_url().'voucher/VoucherDetails/giftdetails/'.$field->GiftVouchersId.'">
+                    <div class="d-inline-block- text-nowrap">
+                      <button class="btn btn-sm btn-icon">
+                        <i class="bx bx-edit"></i>
+                      </button>
+                    </div>
+                  </a>';
+        $table[] = $row;
+      }
+
+      $output = array(
+        "draw"                => $post['draw'],
+        "recordsTotal"        => $this->gift_Model->count_all($post),
+        "recordsFiltered"     => $this->gift_Model->count_filtered($post),
+        "data"                => $table,
+        $data['csrf']['name'] => $data['csrf']['hash']
+      );
+      echo json_encode($output);
+    }
+
+    //create voucher type loading page
+    function createvoucher()
+    {
+       $data = array_merge($this->global_data);
+
+       $data['header']               = $this->load->view('templates/main-header',"",true);
+       $data['topbar']               = $this->load->view('templates/main-topbar',"",true);
+       $data['sidebar']              = $this->load->view('templates/main-sidebar',"",true);
+       $data['footer']               = $this->load->view('templates/main-footer',"",true);
+       $data['bottom']               = $this->load->view('templates/main-bottom',"",true);
+
+       $data['issuancedb']           = $this->predefined_Model->get_issuance()->result();
+       $data['voucherstatus_create'] = $this->predefined_Model->get_voucherstatus_create()->result();
+       $data['serialize']            = $this->predefined_Model->get_serialize()->result();
+       $data['position']             = $this->predefined_Model->get_position()->result();
+
+       $this->load->view('voucher/create_voucher', $data);
+    }
+
+
+    function createVoucherTypeForm() {
+
+      $data = array_merge($this->global_data);
+
+      $data['IpAddress']       = $this->input->ip_address();
+      $data['OperatingSystem'] = $this->agent->platform();
+      $data['Browser']         = $this->agent->version();
+
+      $get = $this->input->post();
+
+      $this->form_validation->set_rules('vouchername', 'Voucher Name', 'required');
+      $this->form_validation->set_rules('vouchershortname', 'Voucher Short Name', 'required');
+      $this->form_validation->set_rules('issuanceType', 'Issuance Type', 'required');
+      $this->form_validation->set_rules('prefix1', 'Prefix', 'required');
+      $this->form_validation->set_rules('serializeselect', 'Select Serialize or Non-Serialize', 'required');
+      $this->form_validation->set_rules('voucherstatus', 'Status', 'required');
+
+      if ($get['position'] == 1 || $get['position'] == 2 || $get['position'] == 3 || $get['position'] == 4 || $get['position'] == 5 || $get['position'] == 6 || $get['position'] == 7
+          || $get['position'] == 8 || $get['position'] == 9 ) {
+
+        $this->form_validation->set_rules('unserializenum', 'Serialize or Non-Serialize Number', 'required');
+      }
+
+      //date tak masuk dengan value tak masuk
+      if ($get['voucherstatus'] == 1) {
+         $get['date'] = date('Y-m-d');
+      }else {
+        $get['date'] = null;
+      }
+
+          // print_r($get['prefixx']);
+      if($this->form_validation->run() == TRUE){
+
+        $continue =11; //true
+
+        // $get['loggerid'] = $this->App_logger_model->insert_app_logger_data($data);//wajib letak applogger for create
+
+          if ($get['loggerid'] = $this->App_logger_model->insert_app_logger_data($data))
+          {
+            if ($get['prefix2'] != null ) {
+              if ($get['prefix2'] > $get['prefix1']) {
+                $get['prefixTwo']       = $get['prefix2'];
+              }else {
+                $continue =99;
+                $message = 'Second prefix must bigger than first prefix';
+              }
+            }else {
+              $get['prefixTwo'] = null;
+            }
+
+            if ($get['prefixx'] == null) {
+              $continue =99;
+              $message = 'Please choose prefix position';
+            }
+
+            if ($get['serialCheckbox'] == null) {
+              $continue =99;
+              $message = 'Please choose serial position';
+            }
+
+            //sort prefix position
+            if ($continue == 11) {
+              $explode = explode(",",$get['prefixx']);
+              $result['sorted'] = sort($explode);
+              $get['firstPrefix'] = current($explode);
+              $get['lastPrefix'] = end($explode);
+
+              //sort serial number position
+              $result['sortedSerial'] = sort($get['serialCheckbox']);
+              $get['firstSerial'] = current($get['serialCheckbox']);
+              $get['lastSerial'] = end($get['serialCheckbox']);
+
+              $totalvalue = $get['totalvalue'];
+              $allvalue = '';
+              for ($i=1; $i<= $totalvalue; $i++) {
+                $valueval = $get['value_'.$i];
+                if ($i == 1) {
+                  $allvalue .= $valueval;
+                }else {
+                  $allvalue .= ','.$valueval;
+                }
+              }
+
+            if ($voucherid = $this->voucher_Model->createVoucherType($get,$allvalue))
+            {
+              $status     = true;
+              $response   = "Voucher Type has been created.";
+              $errorcode  = 200;
+              $actmsg     = " create Voucher Type ".$voucherid;
+            } else {
+              $status     = false;
+              $response   = [
+                "type"    => "authentication",
+                "error"   => array('error' => 'Something went wrong. Please try again later.'),
+              ];
+              $errorcode  = 500;
+              $actmsg     = " is trying to create Voucher Type ID ".$voucherid.". Failed.";
+            }
+          } else
+          {
+            $status    = false;
+            $response  = [
+              "type"   => "authentication",
+              "error"  => array('error' => 'Something went wrong. Please try again later.'),
+            ];
+            $errorcode = 500;
+            $actmsg    = " is trying to create Voucher Type ID ".$voucherid.". Applogger update failed.";
+          }
+          $act = [
+            'UserId'           => $data['UserId'],
+            'ActivityTypeId'   => 27,
+            'ActivityDetails'  => $data['Fullname'].$actmsg,
+            'ActiveDate'       => date('Y-m-d h:i:s'),
+            'IpAddress'        => $data['IpAddress'],
+            'OperatingSystem'  => $data['OperatingSystem'],
+            'Browser'          => $data['Browser'],
+          ];
+
+          $this->ActivityLog_Model->insert_activity($act);
+
+        //   $voucherid = $this->voucher_Model->createVoucherType($get,$allvalue);
+
+        //   $status    = true;
+        //   $response  = "Voucher Type has been created.";
+        //   $errorcode = 200;
+        // }else {
+        //   $status    = false;
+        //   $response  = $message;
+        //   $errorcode = 400;
+        }
+      }
+      else {
+        $error = $this->form_validation->error_array();
+        $salah = '';
+        foreach ($error as $keye) {
+          $salah .= $keye.'<br>';
+        }
+
+        $status    = false;
+        $response  = $salah;
+        $errorcode = 400;
+      }
+
+        $result['token']    = $data['csrf']['hash'];
+        $result['status']   = $status;
+        $result['message']  = $response;
+
+        echo json_encode($result);
+    }
+
+    //Edit voucher type loading page
+    function editvoucher()
+    {
+       $data = array_merge($this->global_data);
+
+       // $this->load->view('templates/header');
+       $data['header']             = $this->load->view('templates/main-header',"",true);
+       $data['topbar']             = $this->load->view('templates/main-topbar',"",true);
+       $data['sidebar']            = $this->load->view('templates/main-sidebar',"",true);
+       $data['footer']             = $this->load->view('templates/main-footer',"",true);
+       $data['bottom']             = $this->load->view('templates/main-bottom',"",true);
+
+       $data['VoucherTypeId']      = $this->uri->segment(4);
+
+       $data['voucherstatus_edit'] = $this->predefined_Model->get_voucherstatus_edit()->result();
+       $data['editdata']           = $this->voucher_Model->get_Editdetails($data['VoucherTypeId']);
+       // $data['permissionEdit']     = $this->voucher_Model->voucherPermissionEdit($id);
+       // $data['values']             = $this->voucher_Model->get_vouchervalue($VoucherTypeValueId);
+
+      $this->load->view('voucher/edit_voucher', $data);
+    }
+
+
+    function editVoucherTypeForm(){
+
+      $data = array_merge($this->global_data);
+
+      $data['IpAddress']       = $this->input->ip_address();
+      $data['OperatingSystem'] = $this->agent->platform();
+      $data['Browser']         = $this->agent->version();
+
+      $get = $this->input->post();
+      $id  = $get['editid'];
+
+      $this->form_validation->set_rules('voucherstatus', 'Status', 'required');
+
+      if ($get['voucherstatus'] == 2 ) {
+        $this->form_validation->set_rules('inactiveDate', 'Inactive Date ', 'required');
+      }
+
+      if($this->form_validation->run() == TRUE){
+
+        $data['AppLoggerId'] = $get['loggerid'];
+        // $this->App_logger_model->update_app_logger_data($data);
+
+        // $this->voucher_Model->editVoucherType($get, $id);
+
+        // $status     = true;
+        // $response   = "Voucher Type has been updated.";
+        // $errorcode  = 200;
+
+        $totalvalue = $get['totalvalue'];
+        $allvalue = '';
+        for ($i=1; $i<= $totalvalue; $i++) {
+          $valueval = $get['value_'.$i];
+          if ($i == 1) {
+            $allvalue .= $valueval;
+          }else {
+            $allvalue .= ','.$valueval;
+          }
+        }
+
+        if ($this->App_logger_model->update_app_logger_data($data))
+        {
+          if ($this->voucher_Model->editVoucherType($get, $id,$allvalue))
+          {
+            $status     = true;
+            $response   = "Voucher Type has been updated.";
+            $errorcode  = 200;
+            $actmsg     = " update Voucher Type ".$id;
+          } else {
+            $status     = false;
+            $response   = [
+              "type"    => "authentication",
+              "error"   => array('error' => 'Something went wrong. Please try again later.'),
+            ];
+            $errorcode  = 500;
+            $actmsg     = " is trying to update Voucher Type ID ".$id.". Failed.";
+          }
+        } else
+        {
+          $status    = false;
+          $response  = [
+            "type"   => "authentication",
+            "error"  => array('error' => 'Something went wrong. Please try again later.'),
+          ];
+          $errorcode = 500;
+          $actmsg    = " is trying to update Voucher Type ID ".$id.". Applogger update failed.";
+        }
+        $act = [
+          'UserId'           => $data['UserId'],
+          'ActivityTypeId'   => 13,
+          'ActivityDetails'  => $data['Fullname'].$actmsg,
+          'ActiveDate'       => date('Y-m-d h:i:s'),
+          'IpAddress'        => $data['IpAddress'],
+          'OperatingSystem'  => $data['OperatingSystem'],
+          'Browser'          => $data['Browser'],
+        ];
+
+        $this->ActivityLog_Model->insert_activity($act);
+      }
+      else
+      {
+        $error = $this->form_validation->error_array();
+        $salah = '';
+
+        foreach ($error as $keye) {
+          $salah .= $keye.'<br>';
+        }
+
+        $status    = false;
+        $response  = $salah;
+        $errorcode = 400;
+      }
+
+        $result['token']    = $data['csrf']['hash'];
+        $result['status']   = $status;
+        $result['message']  = $response;
+
+        echo json_encode($result);
+    }
+
+    function removeVoucherValue(){
+
+      $data = array_merge($this->global_data);
+      $get = $this->input->post();
+
+      $data['AppLoggerId'] = $get['loggerid'];
+      $this->App_logger_model->update_app_logger_data($data);
+
+      if ($this->voucher_Model->remove_vouchervalue($get)) {
+        $result['token']    = $data['csrf']['hash'];
+        $result['status']   = true;
+        $result['message']  = 'Success';
+      }else {
+        $result['token']    = $data['csrf']['hash'];
+        $result['status']   = false;
+        $result['message']  = 'Something went wrong';
+      }
+      echo json_encode($result);
+    }
+
+    function import_giftvoucher_csv()
+    {
+      $data = array_merge($this->global_data);
+      $this->load->library('csvimport');
+
+      $data['UserId']     				= $this->session->userdata('UserId');
+
+      $array                    		= explode('.', $_FILES['file']['name']);
+      $extension                		= end($array);
+      $originalFileName         		= str_replace(' ', '_', $array[0]);
+      $newFileName              		= "upload-gift-voucher".date('YmdGis').".".$extension;
+
+	    $data['CodeNumber']      			= date('YmdGis');
+      $data['NewFileName']      		= $newFileName;
+      $data['OriginalFileName'] 		= $_FILES['file']['name'];
+      $data['NewPath']          		= "uploads/import/".$newFileName;
+      $data['RequestStatusId']	    = "2";
+
+      $config['file_name']      		= $newFileName;
+      $config['upload_path']    		= "uploads/import/";
+      $config['allowed_types']  		= 'xlsx|xls|csv|txt|xltx';
+      $config['max_size']       		= '5120';
+
+      $this->load->library('upload', $config);
+      $this->upload->initialize($config);
+      $data['upload_data'] = '';
+
+      if(isset($_FILES["file"]["tmp_name"]))
+  		{
+  		  $path   = $_FILES["file"]["tmp_name"];
+
+        $csvData = $this->csvimport->parse_csv($_FILES['file']['tmp_name']);
+        $get = $this->input->post();
+
+          $get['loggerid'] = $this->App_logger_model->insert_app_logger_data($data);
+
+          if(!empty($csvData)){
+
+            $errorImport = '';
+            $memData = [];
+            $csvfile = true;
+
+            foreach($csvData as $row){
+
+            $storeid =$this->gift_Model->getStoreId($row['ISSUE STORE']);
+
+            if (isset($storeid)) {
+              if ($storeid->StoreStatusId == 1) {
+                if ($row['EXPIRY DATE'] != null) {
+                  $memData = array(
+                      'StoreId'            => $row['ISSUE STORE'],
+                      'IssuedDate'         => $row['ISSUE DATE'],
+                      'VouchersNumber'     => $row['VOUCHER NUMBER'],
+                      'VoucherValueGift'   => $row['VOUCHER AMOUNT'],
+                      'ExpDate'            => $row['EXPIRY DATE'],
+                      'VoucherStatusId'    => 1,
+                      'VoucherTypeId'      => 0,
+                      'VoucherIssuanceId'  =>0,
+                      'AppLoggerId'        => $get['loggerid'],
+                    );
+                } else {
+                  $memData = array(
+                    'StoreId'            => $row['ISSUE STORE'],
+                    'IssuedDate'         => $row['ISSUE DATE'],
+                    'VouchersNumber'     => $row['VOUCHER NUMBER'],
+                    'VoucherIssuanceId'  =>0,
+                    'VoucherValueGift'   => $row['VOUCHER AMOUNT'],
+                    // 'ExpDate'            => $row['EXPIRY DATE'],
+                    // 'Remarks'            =>
+                    'VoucherStatusId'    => 10,
+                    'VoucherTypeId'      => 0,
+                    'AppLoggerId'        => $get['loggerid'],
+                    );
+                }
+              } else {
+                $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold>
+                                    <td>'.$row['VOUCHER NUMBER'].'</td>
+                                    <td>'.$row['ISSUE STORE'].'</td>
+                                    <td>Store not active</td>
+                                  </tr>';
+                $message = 'Some info is wrong/missing!';
+                $csvfile = false;
+              }
+            } else {
+              $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold">
+                                  <td>'.$row['VOUCHER NUMBER'].'</td>
+                                  <td>'.$row['ISSUE STORE'].'</td>
+                                  <td>Store not exist!</td>
+                                </tr>';
+
+              $message = 'Some info is wrong/missing!';
+              $csvfile = false;
+            }
+
+            if (!empty($memData)) {
+              $insert = $this->gift_Model->insertImportGift($memData);
+              // if($insert){
+              //   $insertCount++;
+              // }
+            }
+              // print_r($errorImport);die;
+            // $this->gift_Model->insertImportGiftIssuance($get,$insert,$row);
+          }
+        }else {
+          $message = 'CSV file is empty';
+        }
+
+        if (!$this->upload->do_upload('file',$newFileName))
+        {
+  	        $data['invalid']              = FALSE;
+  	        // $data                         = array('msg' => $this->upload->display_errors());
+            $message = $this->upload->display_errors();
+  	    } else {
+  	        $data['invalid']              = FALSE;
+  	        $upload_data                  = $this->upload->data();
+  	        $downloadsData['file']        = $upload_data['file_name'];
+  	        $data['CreatedDate']          = date("Y-m-d H:i:s", time() );
+  	        $data['CreatedBy']            = $data['UserId'];
+            if ($csvfile == true) {
+              $message = 'File has been uploaded';
+            }
+          }
+        // redirect('voucher/voucher/giftlist');
+      }
+
+      $result['csv']          = $csvfile;
+      $result['errorimport']  = $errorImport;
+      $result['message']      = $message;
+      $result['token']        = $data['csrf']['hash'];
+      echo json_encode($result);
+    }
+
+    function import_voucher_csv_backup()
+    {
+      $data = array_merge($this->global_data);
+      $this->load->library('csvimport');
+
+      $data['UserId']     				= $this->session->userdata('UserId');
+
+      $array                    		= explode('.', $_FILES['file']['name']);
+      $extension                		= end($array);
+      $originalFileName         		= str_replace(' ', '_', $array[0]);
+      $newFileName              		= "request_bulk_activation_".date('YmdGis').".".$extension;
+
+      $data['CodeNumber']      			= date('YmdGis');
+      $data['NewFileName']      		= $newFileName;
+      $data['OriginalFileName'] 		= $_FILES['file']['name'];
+      $data['NewPath']          		= "uploads/bulk_activation/".$newFileName;
+      $data['RequestStatusId']	    = "2";
+
+      $config['file_name']      		= $newFileName;
+      $config['upload_path']    		= "uploads/bulk_activation/";
+      $config['allowed_types']  		= 'xlsx|xls|csv|txt|xltx';
+      $config['max_size']       		= '5120';
+
+      $this->load->library('upload', $config);
+      $this->upload->initialize($config);
+      $data['upload_data'] = '';
+
+      if(isset($_FILES["file"]["tmp_name"]))
+  		{
+  		  $path   = $_FILES["file"]["tmp_name"];
+
+        $csvData = $this->csvimport->parse_csv($_FILES['file']['tmp_name']);
+        $get = $this->input->post();
+
+        $data['AppLoggerId'] = $get['loggerid'];
+        $this->App_logger_model->update_app_logger_data($data);
+
+          if(!empty($csvData)){
+            foreach($csvData as $row){
+
+              $statusid = $this->voucher_Model->getVoucherStatus($row['VOUCHER STATUS']);
+
+              // $status = $row['VOUCHER STATUS'];
+              $this->voucher_Model->editimportVoucher($statusid); //update import voucher
+          }
+          // print_r($status);die;
+
+        }
+
+      if (!$this->upload->do_upload('file',$newFileName))
+      {
+	        $data['invalid']              = FALSE;
+	        $data                         = array('msg' => $this->upload->display_errors());
+	    } else {
+	        $data['invalid']              = FALSE;
+	        $upload_data                  = $this->upload->data();
+	        $downloadsData['file']        = $upload_data['file_name'];
+	        $data['CreatedDate']          = date("Y-m-d H:i:s", time() );
+	        $data['CreatedBy']            = $data['UserId'];
+        }
+        redirect('voucher/voucher/promotionlist');
+      }
+    }
+
+    function import_voucher_csv()
+    {
+      $data = array_merge($this->global_data);
+      $this->load->library('csvimport');
+
+      $data['UserId']     				= $this->session->userdata('UserId');
+
+      $array                    		= explode('.', $_FILES['file']['name']);
+      $extension                		= end($array);
+      $originalFileName         		= str_replace(' ', '_', $array[0]);
+      $newFileName              		= "upload-vouchers".date('YmdGis').".".$extension;
+
+      $data['CodeNumber']      			= date('YmdGis');
+      $data['NewFileName']      		= $newFileName;
+      $data['OriginalFileName'] 		= $_FILES['file']['name'];
+      $data['NewPath']          		= "uploads/import/".$newFileName;
+      $data['RequestStatusId']	    = "2";
+
+      $config['file_name']      		= $newFileName;
+      $config['upload_path']    		= "uploads/import/";
+      $config['allowed_types']  		= 'xlsx|xls|csv|txt|xltx';
+      $config['max_size']       		= '5120';
+
+      $this->load->library('upload', $config);
+      $this->upload->initialize($config);
+      $data['upload_data'] = '';
+
+      if(isset($_FILES["file"]["tmp_name"]))
+  		{
+  		  $path   = $_FILES["file"]["tmp_name"];
+
+        $csvData = $this->csvimport->parse_csv($_FILES['file']['tmp_name']);
+        $get = $this->input->post();
+
+        $data['AppLoggerId'] = $get['loggerid'];
+        $get['loggerid'] = $this->App_logger_model->update_app_logger_data($data);
+
+          if(!empty($csvData)) {
+
+            $errorImport = '';
+            $memData = [];
+            $csvfile = true;
+
+            foreach($csvData as $row){
+
+              $statusid = $this->voucher_Model->getVoucherStatus($row['ACTION']);
+
+              if(isset($statusid)){
+                if($statusid->VoucherStatusId == 1) {
+
+                  $memData = array(
+                    'VouchersNumber'   => $row['VOUCHER NUMBER'],
+                    'VoucherStatusId'  => $row['ACTION'],
+                    );
+                }
+                else {
+                  $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold>
+                                      <td>'.$row['VOUCHER NUMBER'].'</td>
+                                      <td>'.$row['ACTION'].'</td>
+                                      <td>Voucher not available</td>
+                                    </tr>';
+                  $message = 'Some info is wrong/missing!';
+                  $csvfile = false;
+                }
+              }
+              else {
+                $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold>
+                                    <td>'.$row['VOUCHER NUMBER'].'</td>
+                                    <td>'.$row['ACTION'].'</td>
+                                    <td>Voucher not exist!</td>
+                                  </tr>';
+                $message = 'Some info is wrong/missing!';
+                $csvfile = false;
+              }
+
+              if(!empty($memData)) {
+                $update = $this->voucher_Model->editimportVoucher($memData); //update import voucher
+              }
+          }
+        } else {
+          $message = 'CSV file is empty';
+        }
+
+      if (!$this->upload->do_upload('file',$newFileName))
+      {
+	        $data['invalid']              = FALSE;
+	        // $data                         = array('msg' => $this->upload->display_errors());
+          $message = $this->upload->display_errors();
+	    } else {
+	        $data['invalid']              = FALSE;
+	        $upload_data                  = $this->upload->data();
+	        $downloadsData['file']        = $upload_data['file_name'];
+	        $data['CreatedDate']          = date("Y-m-d H:i:s", time() );
+	        $data['CreatedBy']            = $data['UserId'];
+          if($csvfile == true) {
+            $message = 'File has been uploaded';
+          }
+        }
+        // redirect('voucher/voucher/promotionlist');
+      }
+
+      $result['csv']         = $csvfile;
+      $result['errorimport'] = $errorImport;
+      $result['message']     = $message;
+      $result['token']       = $data['csrf']['hash'];
+      echo json_encode($result);
+    }
+
+
+    function formatReport(){
+      $data            = array_merge($this->global_data);
+
+       // file name
+       $filename = 'voucher_format'.date('Ymd').'.csv';
+       header("Content-Description: File Transfer");
+       header("Content-Disposition: attachment; filename=$filename");
+       header("Content-Type: application/csv; ");
+
+       // file creation
+       $file = fopen('php://output', 'w');
+
+       $header = array("ISSUE STORE","ISSUE DATE","VOUCHER NUMBER","VOUCHER AMOUNT","EXPIRY DATE", "ACTION");
+       fputcsv($file, $header);
+
+       fclose($file);
+       exit;
+    }
+
+    function formatGiftReport(){
+      $data            = array_merge($this->global_data);
+
+       // file name
+       $filename = 'Giftvoucher_format'.date('Ymd').'.csv';
+       header("Content-Description: File Transfer");
+       header("Content-Disposition: attachment; filename=$filename");
+       header("Content-Type: application/csv; ");
+
+       // file creation
+       $file = fopen('php://output', 'w');
+
+       $header = array('ISSUE STORE','ISSUE DATE','VOUCHER NUMBER','VOUCHER AMOUNT', 'EXPIRY DATE', 'ACTION');
+
+       fputcsv($file, $header);
+
+       fclose($file);
+       exit;
+    }
+
+    //ok
+
+    }
+ ?>

@@ -1,0 +1,184 @@
+// function importCSVFile($import){
+//   $data = array_merge($this->global_data);
+//
+//   $filename = $import->CSVFileUrl;
+//   $handle   = fopen($filename,"r");
+//
+//   $data['IpAddress']       = $this->input->ip_address();
+//   $data['OperatingSystem'] = $this->agent->platform();
+//   $data['Browser']         = $this->agent->browser();
+//
+//   $data['UserId'] = $this->session->userdata('UserId');
+//
+//   $actmsg     = '';
+//   $error_log  = array();
+//   $csvfile    = true;
+//   $errorCount = 0;
+//
+//   $vouchernumber    = $this->scheduler_Model->getGiftVoucherNumber();
+//   $storeid          = $this->scheduler_Model->getStoreId();
+//   $voucherDataBatch = array();
+//
+//   if ($handle) {
+//     $row_num = 0;
+//     while (($row = fgetcsv($handle,1000,","))!== FALSE) {
+//       $row_num++;
+//       if ($row_num > 2) {
+//         if (count($row) >= 8) {
+//           $searchFor = $row[2];
+//           $gvNumber = array_values(array_filter($vouchernumber, function($element) use($searchFor){
+//             return isset($element->VouchersNumber) && $element->VouchersNumber == $searchFor;
+//           }));
+//
+//           $searchFor = $row[0];
+//           $storecode = array_values(array_filter($storeid, function($element) use($searchFor){
+//             return isset($element->StoreCode) && $element->StoreCode == $searchFor;
+//           }));
+//
+//           $searchFor = $row[4];
+//           $redeemStore = array_values(array_filter($this->scheduler_Model->getStoreId(), function($element) use($searchFor){
+//             return isset($element->StoreCode) && $element->StoreCode == $searchFor;
+//           }));
+//
+//           $loggerid = $this->App_logger_model->insert_app_logger_data($data);
+//
+//           if ($loggerid) {
+//             if (!empty($storecode))
+//             {
+//               if ($storecode[0]->StoreStatusId == 1)
+//               {
+//                 if (!empty($gvNumber))
+//                 {
+//                   $error_log[] = array(
+//                     'CSVFileId' => $import->CSVFileId,
+//                     'VoucherNumber' => $row[2],
+//                     'ImportDate'    => date('Y-m-d H:i:s'),
+//                     'ErrorMessage'  => 'Voucher already exist. Please key in Action to update this voucher.'
+//                   );
+//                   $csvfile = false;
+//                   $actmsg  = " is trying to Import Existing Gift Voucher. Failed.";
+//                   $errorCount++;
+//                 }elseif ($row[6] == null) {
+//                   $error_log[] = array(
+//                     'CSVFileId'     => $import->CSVFileId,
+//                     'VoucherNumber' => $row[2],
+//                     'ImportDate'    => date('Y-m-d H:i:s'),
+//                     'ErrorMessage'  => 'Batch Number cannot be Empty!'
+//                   );
+//                   $csvfile  = false;
+//                   $actmsg   = " is trying to Import Gift Voucher without Batch Number. Failed.";
+//                   $errorCount++;
+//                 }else {
+//                   if ($row[3]!= 0 || $row[3]!= "0" || $row[3]!= "0.0")
+//                   {
+//                     if (isset($redeemStore[0])) {
+//                       $redeemStore = $redeemStore[0]->StoreCode;
+//                     }else {
+//                       $redeemStore = '';
+//                     }
+//
+//                     if ($row[5]!= null) {
+//                       $voucherData = array(
+//                         'StoreId'            => $storecode[0]->StoreId,
+//                         'IssuedDate'         => $this->convertDateFormat($row[1]),
+//                         'VouchersNumber'     => $row[2],
+//                         'VoucherValueGift'   => $row[3],
+//                         'RedeemStore'        => $redeemStore,
+//                         'ExpDate'            => $this->convertDateFormat($row[5]),
+//                         'BatchNumber'        => $row[6],
+//                         'VoucherStatusId'    => 1,
+//                         'VoucherTypeId'      => 1,
+//                         'VoucherIssuanceId'  => 0,
+//                         'AppLoggerId'        => $loggerid,
+//                       );
+//                     }else {
+//                       $voucherData = array(
+//                         'StoreId'            => $storecode[0]->StoreId,
+//                         'IssuedDate'         => $this->convertDateFormat($row[1]),
+//                         'VouchersNumber'     => $row[2],
+//                         'VoucherIssuanceId'  => 0,
+//                         'VoucherValueGift'   => $row[3],
+//                         'RedeemStore'        => $redeemStore,
+//                         'BatchNumber'        => $row[6],
+//                         'VoucherStatusId'    => 10,
+//                         'VoucherTypeId'      => 1,
+//                         'AppLoggerId'        => $loggerid,
+//                       );
+//                     }
+//                     $voucherDataBatch[] = $voucherData;
+//                   }else {
+//                     $error_log[] = array(
+//                       'CSVFileId' => $import->CSVFileId,
+//                       'VoucherNumber' => $row[2],
+//                       'ImportDate'    => date('Y-m-d H:i:s'),
+//                       'ErrorMessage'  => 'Not allowed to import with Voucher Amount 0.'
+//                     );
+//                     $csvfile = false;
+//                     $actmsg  = " is trying to Import Vouchers with Amount RM 0. Failed.";
+//                     $errorCount++;
+//                   }
+//                 }
+//               }
+//               else
+//               {
+//                 $error_log[] = array(
+//                   'CSVFileId' => $import->CSVFileId,
+//                   'VoucherNumber' => $row[2],
+//                   'ImportDate'    => date('Y-m-d H:i:s'),
+//                   'ErrorMessage'  => 'Store not active'
+//                 );
+//                 $csvfile = false;
+//                 $actmsg  = " is trying to Import Gift Voucher. Inactive Store.";
+//                 $errorCount++;
+//               }
+//             }
+//             else
+//             {
+//               $error_log[] = array(
+//                 'CSVFileId'     => $import->CSVFileId,
+//                 'VoucherNumber' => $row[2],
+//                 'ImportDate'    => date('Y-m-d H:i:s'),
+//                 'ErrorMessage'  => 'Store not exist!'
+//               );
+//               $csvfile = false;
+//               $actmsg  = " is trying to Import Gift Voucher. Store not Exist.";
+//               $errorCount++;
+//             }
+//           }
+//         }
+//       }
+//     }
+//     fclose($handle);
+//   }
+//
+//   //insert gv data to gv table using batch insert
+//   if (!empty($voucherDataBatch)) {
+//     $this->scheduler_Model->insertImportGift($voucherDataBatch);
+//   }
+//
+//   //update error count to import_csvFile table.
+//   $this->scheduler_Model->updateImportError($import->CSVFileId,$errorCount);
+//
+//   //Update import status
+//   $this->scheduler_Model->updateImportStatus($import->CSVFileId);
+//
+//   if (!empty($error_log)) {
+//     $this->db->insert_batch('scheduler_import_errorlog',$error_log);
+//   }
+//
+//   $act = [
+//     'UserId'           => 2,
+//     'ActivityTypeId'   => 33,
+//     'ActivityDetails'  => $actmsg,
+//     'ActiveDate'       => date('Y-m-d H:i:s'),
+//     'IpAddress'        => $data['IpAddress'],
+//     'OperatingSystem'  => $data['OperatingSystem'],
+//     'Browser'          => $data['Browser'],
+//     ];
+//
+//     $this->ActivityLog_Model->insert_activity($act);
+//
+//   $result['csv']          = $csvfile;
+//   $result['token']        = $data['csrf']['hash'];
+//   echo json_encode($result);
+// }

@@ -1,0 +1,91 @@
+// if ($data['status'] != 7) {
+      //   echo "\r"; echo "\r"; echo strtoupper("DAILY VOUCHER ISSUANCE REPORT FOR " .$bystore);
+      //   echo "\n";
+      //   echo strtoupper("VOUCHER TYPE: " .$vouchertype);
+      //   echo "\n";
+      //   echo strtoupper("VOUCHER STATUS: " .$voucherstatus);
+      //   echo "\n";
+      //   echo "FOR  ".$from."  TO  ".$to;
+      //   echo "\n";
+      //   echo "\n";
+      //
+      //   $i = 0;
+      //   $totalamount = 0;
+
+        // foreach ($response as $key) {
+          // if ($key->Source == 'POS') {
+            // $operator = $key->IssuanceCashierId;
+          // }else {
+          //   $operator = $key->StaffId;
+          // }
+
+          // $array = array(
+           // 'No'           => $no,
+           // 'STORE'           => $key->StoreCode,
+           // 'NAME'            => $key->StoreName,
+           // 'ISSUING DATE'    => date('d/m/Y',strtotime($key->CreatedDate)),
+           // 'ISSUING TIME'    => date('h:i A',strtotime($key->CreatedDate)),
+           // 'VOUCHER NUMBER'  => $key->VouchersNumber,
+           // 'VOUCHER AMT'     => $key->VouchersValue,
+           // 'Voucher Type' => $key->VoucherName,
+           // 'POS'             => $key->POSNumber,
+           // 'TRANSACTION'     => $key->ReceiptNumber,
+           // 'Reason'       => $key->ReasonName,
+      //      'OPERATOR'        => $operator,
+      //    );
+      //
+      //    $no++;
+      //    array_push($arraylist,$array);
+      //
+      //    $i++;
+      //    $totalamount += $key->VouchersValue;
+      //   };
+      //
+      //   if ($from == "" && $to == "") {
+      //     $this->download_send_headers("Voucher Report.csv");
+      //   }else {
+      //     $this->download_send_headers("Voucher Report  ".$from." - ".$to.".csv");
+      //   }
+      // } else {
+      //   echo "\r"; echo "\r"; echo strtoupper("DAILY VOUCHER REDEMPTION FOR " .$bystore);
+      //   echo "\n";
+      //   echo "REDEEMED PERIOD   ".$from." TO  ".$to;
+      //   echo "\n";
+      //   echo "\n";
+      //
+      //   $i = 0;
+      //   $totalamount = 0;
+
+        // foreach ($response as $key) {
+          // if ($key->Source == 'POS') {
+            // $operator = $key->IssuanceCashierId;
+          // }else {
+          //   $operator = $key->StaffId;
+          // }
+
+      //     $array = array(
+      //      'REDEEM STORE'   => $key->RedemptionStore,
+      //      'REDEEM DATE'    => date('d/m/Y',strtotime($key->RedemptionDateTime)),
+      //      'REDEEM TIME'    => date('h:i A',strtotime($key->RedemptionDateTime)),
+      //      'VOUCHER NUMBER' => $key->VouchersNumber,
+      //      'POS'            => $key->POSNumber,
+      //      'TRANSACTION'    => $key->ReceiptNumber,
+      //      'ISSUE STORE'    => $key->StoreCode,
+      //      'ISSUE DATE'     => date('d/m/Y',strtotime($key->CreatedDate)),
+      //      'ISSUE TIME'     => date('h:i A',strtotime($key->CreatedDate)),
+      //      'VOUCHER AMOUNT' => $key->VouchersValue,
+      //    );
+      //
+      //    $no++;
+      //    array_push($arraylist,$array);
+      //
+      //    $i++;
+      //    $totalamount += $key->VouchersValue;
+      //   };
+      //
+      //   if ($from == "" && $to == "") {
+      //     $this->download_send_headers("Voucher Redemption Report.csv");
+      //   }else {
+      //     $this->download_send_headers("Voucher Redemption Report ".$from." - ".$to.".csv");
+      //   }
+      // }

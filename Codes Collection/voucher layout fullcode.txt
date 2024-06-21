@@ -1,0 +1,331 @@
+//controller
+<?php
+
+class VoucherLayout extends CI_Controller {
+
+    function __construct()
+    {
+      parent:: __construct();
+      $this->load->model('voucher/voucherLayout_Model');
+      $this->load->model('voucher/reprintVoucher_Model');
+
+
+      //CSRF PROTECTION\\
+      $this->global_data['csrf'] =
+      [
+        'name' => $this->security->get_csrf_token_name(),
+        'hash' => $this->security->get_csrf_hash()
+      ];
+      //CSRF PROTECTION\\
+
+      $this->global_data['UserId']      = $this->session->userdata('UserId');
+      $this->global_data['Fullname']    = $this->session->userdata('Fullname');
+      $this->global_data['Role']        = $this->session->userdata('Role');
+
+      $this->global_data['CreatedDate'] = date("Y-m-d H:i:s", time() );
+      $this->global_data['CreatedBy']   = $this->global_data['UserId'];
+      $this->global_data['AppType']     = 2;
+      $this->global_data['UpdatedDate']  = date("Y-m-d H:i:s", time() ); //for edit part
+      $this->global_data['UpdatedBy']    = $this->global_data['UserId'];
+    }
+
+    public function index()
+    {
+     $data = array_merge($this->global_data);
+
+     // $data['voucherdetails']=$this->uri->segment(3);
+     // $data['printdetails'] = $this->voucherLayout_Model->printVoucherDetails($data['voucherdetails']);
+
+     // $reprintid = $this->uri->segment(3);
+     // $data['sucessReprint']= $this->reprintVoucher_Model->get_reprintSuccess($reprintid);
+
+     // $this->load->view('voucher/voucher_layout', $data);
+    }
+
+    function voucher_details(){
+      $data = array_merge($this->global_data);
+      // $id   = $this->uri->segment(3);
+      // $data['sucessReprint']= $this->voucherLayout_Model->printVoucherDetails($id);
+
+      $data['reprintid'] = $this->uri->segment(4);
+      $data['sucessReprint']= $this->voucherLayout_Model->get_reprintSuccess($data['reprintid']);
+      $data['duplicateVoucher']= $this->voucherLayout_Model->get_duplicateVoucher($data['reprintid']);
+
+
+      // echo "<pre>";
+      // print_r($data['sucessReprint']);
+      // echo "</pre>";
+
+       $this->load->view('voucher/voucher_layout', $data);
+      // $this->voucherLayout_Model->printVoucherDetails($id
+    }
+
+}
+// ?>
+
+
+//view
+
+<head>
+    <style media="screen">
+      #invoice-POS {
+      box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
+      /* padding:2mm; */
+      margin: 0 0 0 0;
+      font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+      width: 78mm;
+      background: #FFF;
+
+      ::selection {background: #f31544; color: #FFF;}
+      ::moz-selection {background: #f31544; color: #FFF;}
+      h1{
+        font-size: 1.5em;
+        color: #222;
+      }
+      h2{font-size: .9em;}
+      h3{
+        font-size: 1.2em;
+        font-weight: 300;
+        line-height: 2em;
+      }
+      p{
+        font-size: .7em;
+        color: #666;
+        line-height: 1.2em;
+      }
+
+      #top, #mid,#bot{ /* Targets all id with 'col-' */
+        border-bottom: 1px solid #EEE;
+      }
+
+      #top{min-height: 100px;}
+      #mid{min-height: 80px;}
+      #bot{ min-height: 50px;}
+
+      #top .logo{
+        //float: left;
+        height: 60px;
+        width: 60px;
+        background: url() no-repeat;
+        background-size: 60px 60px;
+      }
+      .clientlogo{
+        float: left;
+        height: 60px;
+        width: 60px;
+        background: url() no-repeat;
+        background-size: 60px 60px;
+        border-radius: 50px;
+      }
+      .info{
+        display: block;
+        //float:left;
+        margin-left: 0;
+      }
+      .title{
+        float: right;
+      }
+      .title p{text-align: right;}
+      table{
+        width: 100%;
+        border-collapse: collapse;
+      }
+      td{
+        //padding: 5px 0 5px 15px;
+        //border: 1px solid #EEE
+      }
+      .tabletitle{
+        padding: 5px;
+        font-size: .5em;
+        background: #EEE;
+      }
+      .service{border-bottom: 1px solid #EEE;}
+      .item{width: 24mm;}
+      .itemtext{font-size: .5em;}
+
+      #legalcopy{
+        margin-top: 5mm;
+      }
+    }
+    .text-center{
+      text-align: center;
+    }
+    .mtb{
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    .mtbsmall{
+      margin-top: 5px;
+      margin-bottom: 5px;
+    }
+    .t-title{
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .s-info{
+      font-size: 13px;
+    }
+
+    @media print {
+      .text-center{
+        text-align: center;
+      }
+      .mtb{
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      .mtbsmall{
+        margin-top: 5px;
+        margin-bottom: 5px;
+      }
+      .t-title{
+        font-size: 13px;
+        font-weight: bold;
+      }
+      .s-info{
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+    <div id="invoice-POS">
+
+    <?php foreach ($sucessReprint as $row): ?>
+      <div id="bot">
+        <div class="row">
+          <div class="col-md-12" id="printTable">
+            <div class="col-md-12 mtb text-center">
+            </div>
+            <div class="col-md-12 text-center">
+              <div class="topbox">
+                <table width="100%">
+                  <input type="hidden" name="detailsid" value="<?php echo $row->VoucherIssuanceId; ?>">
+                  <tr>
+                    <img style="width:100%" src="<?php echo base_url(); ?>assets/img/branding/parksonlogo.bmp" />
+                    <h6 style="font-size:9px; text-align:center; margin-top:5px">PARKSON CORPORATION SDN BHD</h6>
+                    <h6 style="font-size:9px; text-align:center; margin-top:-20px">Reg. No.:198601007838 (157029-X)</h6>
+                    <!-- <td width="60%">: <?php echo $items->OrderNumber; ?></td> -->
+                  </tr>
+                  <tr>
+                    <!-- <h2 style="font-size:20px; text-align:center; margin-top:-10px" >DISCOUNT VOUCHER</h2> -->
+                    <h2 style="font-size:20px; text-align:center; margin-top:-20px" ><?php echo $row->VoucherName;  ?></h2>
+                    <h2 style="font-size:30px; text-align:center; margin-top:-15px" >RM <?php echo $row->VouchersValue; ?></h2>
+
+                    <h6 style="margin-top:-28px; text-align:center; color:#505203; font-size:12px">Valid from <?php echo date('d/m/Y') ?> to <?php  echo date('d/m/Y', strtotime($row->ExpDate)); ?></h6>
+
+                    <svg id="barcode"></svg>
+
+                    <h6 style="margin-top:-2px; text-align:center; color:#505203; font-size:12px"><?php echo $row->VouchersNumber; ?></h6>
+                  </tr>
+                </table>
+
+                 <table width="100%" style="margin-top:-25px">
+                  <tr style="text-align:left; color:#444444">
+                    <td><b style="font-size:10px">Terms & Conditions
+                        <br>1. This voucher is not redeemable for cash in whole or in part.
+                        <br>2. This voucher is not entitled for Parkson Card Points or BonusLink Points and
+                        is not valid for further redemption or any other vouchers/coupons.
+                        <br>3. Please visit www.parkson.com.my for more information.
+                    </b></td>
+                  </tr>
+                </table>
+
+                <table width="100%" style="margin-top:10px">
+                  <tbody style="text-align:left">
+                      <tr>
+                        <th style="font-size:10px"> <?php echo $row->VoucherIssuanceId; ?> <?php echo $row->POSNumber; ?></th>
+                      </tr>
+                      <tr>
+                        <th style="font-size:10px"><?php echo date('d/m/Y h:i') ?></th>
+                      </tr>
+                      <?php if (isset($duplicateVoucher->ReceiptNumber)): ?>
+                        <tr>
+                          <th style="font-size:10px">**Duplicate</th>
+                        </tr>
+                      <?php endif; ?>
+
+                  </tbody>
+                </table>
+                <table width="100%" style="margin-top:-50px; margin-bottom:35px; float:right">
+                  <tbody style="text-align:right">
+                      <tr>
+                        <!-- store-pos-receipt number -->
+                        <th style="font-size:10px"><?php echo $row->POSNumber; ?>-<?php echo $row->ReceiptNumber; ?></th>
+
+                      </tr>
+                      <tr>
+                        <th style="font-size:10px"><?php  echo date('d/m/Y', strtotime($row->ReceiptDateTime)); ?></th>
+                      </tr>
+                      <tr>
+                        <th style="font-size:10px"><?php echo $row->VouchersNumber; ?></th>
+                      </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!--End InvoiceBot-->
+    <?php endforeach; ?>
+
+</div><!--End Invoice-->
+</body>
+
+<script src="https://fonts.googleapis.com/css?family=Bangers|Roboto"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.8.0/dist/barcodes/JsBarcode.code128.min.js"></script>
+
+<script type="text/javascript">
+
+        var receiptID = '<?php echo $row->VouchersNumber; ?>'
+
+        JsBarcode("#barcode", receiptID, {
+        format: "code128",
+        width: 1.3,
+        height: 30,
+        marginLeft: 0,
+        displayValue: false
+        });
+
+        window.print();
+
+</script>
+
+//model
+
+<?php
+  /**
+   *
+   */
+  class voucherLayout_Model extends CI_Model
+  {
+    function get_reprintSuccess($reprintid){
+      $this->db->select('*');
+      // $this->db->join("reprint_voucher","reprint_voucher.VoucherIssuanceId = voucher_issuance.VoucherIssuanceId");
+      $this->db->join("vouchers","vouchers.VoucherIssuanceId = voucher_issuance.VoucherIssuanceId");
+      $this->db->join("voucher_type","voucher_type.VoucherTypeId = vouchers.VoucherTypeId");
+      $this->db->join("store","store.StoreId = voucher_issuance.IssuanceStoreId");
+      $this->db->join("pos","pos.POSId = voucher_issuance.IssuancePOSId");
+      $this->db->where('voucher_issuance.VoucherIssuanceId', $reprintid);
+
+      $query = $this->db->get('voucher_issuance');
+      return $query->result();
+    }
+
+    // function voucherbarcode($reprintid){
+    // $this->db->join("vouchers","vouchers.VoucherIssuanceId = voucher_issuance.VoucherIssuanceId");
+    // $this->db->where('voucher_issuance.VoucherIssuanceId', $reprintid);
+    // $query = $this->db->get('vouchers');
+    // return $query->result();
+    // }
+
+    function get_duplicateVoucher($id){
+      $this->db->select('ReceiptNumber');
+      $this->db->where('VoucherIssuanceId', $id);
+      $query = $this->db->get("reprint_voucher");
+      return $query->row();
+    }
+  }
+
+ ?>

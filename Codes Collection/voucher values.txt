@@ -1,0 +1,23 @@
+      <!-- <input type="hidden " name="oldvouchervalue" value="<?php echo count($values); ?>">
+
+                      <?php $jj = 1; foreach ($values as $value): ?>
+
+                      <div id="valuelist_<?php echo $value->VoucherTypeValueId ?>">
+                            <div class=" row mb-3">
+                              <div class="col-md-3">
+                                <label class="form-label mb-2 mt-2" for="vouchervalue">Voucher Value</label>
+                                <input type="text" name="oldvalue_<?php echo $jj; ?>" class="form-control" value="<?php echo $value->VouchersValue ?>" disabled/>
+                                <input type="hidden" name="oldvalueid_ <?php echo $jj; ?>" value="<?php echo $value->VoucherIssuanceId ?>">
+                              </div>
+
+                              <div class="col-md-3">
+                                <label class="form-label mb-2 mt-2" for="multicol-action">Action</label>
+                                <div class="dt-buttons" id="addValue_1">
+                                  <button class="btn btn-primary me-sm-3 me-1 addValue" type="button" name="button" style="background-color:#122620; border-color:#122620">
+                                    <span>Add</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                      </div>
+                      <?php $jj++; endforeach; ?> -->

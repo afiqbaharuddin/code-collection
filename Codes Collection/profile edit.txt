@@ -1,0 +1,167 @@
+//controller
+
+<?php
+
+class ProfileEdit extends CI_Controller
+{
+
+  function __construct()
+
+ {
+    parent:: __construct();
+    $this->load->model('Profile_model');
+    $this->load->library('session');
+    $this->load->helper('form');
+  }
+
+  function show_user_id() //show who user
+  {
+    $id= $this->uri->segment(3);
+
+    $data= array();
+    $data['single_user']=$this->Profile_model->show_user_id($id);
+    // print_r($data['single_user']);
+
+    $this->load->view('templates/css.php');
+    $this->load->view('templates/header.php');
+    $this->load->view('templates/navbar.php');
+
+    $this->load->view('profile_view', $data);
+
+  }
+
+  function update_user_id1()
+  {
+    $name=$this->input->post('username');
+    $pass=$this->input->post('pass');
+    $userid=$this->input->post('userid');
+
+    if ($pass =="")
+    {
+      $data = array(
+                    'username'  => $this->input->post('username'),
+                    'address'  => $this->input->post('address'),
+                    'phoneNum'  => $this->input->post('phoneNum')
+                    );
+    } else
+    {
+      $data = array(
+                    'username'  => $this->input->post('username'),
+                    'pass'  => $this->input->post('pass'),
+                    'address'  => $this->input->post('address'),
+                    'phoneNum'  => $this->input->post('phoneNum')
+                    );
+    }
+
+    $this->Profile_model->update_user_id1($name,$data);
+
+     // redirect('ProfileEdit/show_user_id/'.$userid);
+  }
+}
+
+ ?>
+
+
+
+
+//model
+
+<?php
+
+class Profile_model extends CI_Model
+{
+
+  // function __construct()
+  // {
+  //
+  // }
+
+  function show_user()
+  {
+    $query = $this->db->get('user');
+    $query_result = $query->row();
+    return $query_result;
+  }
+
+  function show_user_id($data)
+  {
+    $this->db->select('*');
+    $this->db->from('user');
+    $this->db->where('id', $data);
+    $query = $this->db->get();
+    $result = $query->row();
+    return $result;
+  }
+
+  function update_user_id1($id, $data)
+  {
+    $this->db->where('username', $id);
+    $this->db->update('user', $data);
+  }
+}
+
+ ?>
+
+
+//view
+
+<html>
+  <head>
+    <!-- <srcipt src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> -->
+  </head>
+
+  <body><center>
+
+
+    <div class="navbar-nav ml-auto py-0">
+      <?php if ($this->session->userdata('loggedIn') !== null): ?>
+        <br><h4>User Profile for:</h4>
+        <p><a href="<?php echo base_url()."index.php/profileEdit/show_user_id".$single_user->username; ?>"><?php echo $single_user->username; ?></a><p><hr>
+
+
+        <form id="formUpdate" method="POST">
+
+          <input type="hidden" name="userid" value="<?php echo $single_user->id ?>">
+          <label>Username:</label>
+          <input type="text" name="username" value="<?php echo $single_user->username ?>" readonly></input><br>
+
+          <label>Password:</label>
+          <input type="text" name="pass"></input><br>
+
+          <label>Address:</label>
+          <input type="text" name="address" value="<?php echo $single_user->address ?>"></input><br>
+
+          <label>Phone Number</label>
+          <input type="text" name="phoneNum" value="<?php echo $single_user->phoneNum ?>" ></input><br><br>
+
+          <input type="submit" name="submit" value="UPDATE"></input>
+          <!-- onClick="alert('You sure want to update?...')" -->
+        </form>
+      <?php endif; ?>
+
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+      <script>
+      $(document).ready(function(){
+        $('#formUpdate').submit(function(e){
+
+          $.ajax({
+            type:"post",
+            url:"<?php echo base_url(); ?>index.php/profileEdit/update_user_id1",
+            data: $('#formUpdate').serialize(),
+            success:function(data){
+               alert('profile was updated');
+            }
+          });
+          e.preventDefault();
+        });
+    });
+      </script>
+
+  </body>
+</html>
+
+
+
+
+

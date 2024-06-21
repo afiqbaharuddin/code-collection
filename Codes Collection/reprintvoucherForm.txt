@@ -1,0 +1,88 @@
+function reprintvoucherForm() {
+
+    $data = array_merge($this->global_data);
+    $get = $this->input->post();
+    $id=$get['layoutid'];
+    $rn = $get['receiptNumber'];
+
+    $UserId= $this->session->userdata('UserId');
+
+    $this->form_validation->set_rules('posNumber', 'POS Number', 'required');
+    $this->form_validation->set_rules('issuedDate', 'Issued Date', 'required');
+    $this->form_validation->set_rules('receiptNumber', 'Receipt Number', 'required');
+
+    $count = $this->reprintVoucher_Model->get_reprintNumCheck($rn);
+
+    $reprintSetting= $this->reprintVoucher_Model->reprintSetting($get['storeid']);
+
+    if($this->form_validation->run() == TRUE){
+      $reprint = 0;
+
+      $checkreceipt   = $this->reprintVoucher_Model->get_receiptchecking($get['receiptNumber']);
+
+        if ($count < $reprintSetting->NumReprint) {
+
+        if ($checkreceipt != null)
+        {
+          if ($get['storeid'] == $checkreceipt->IssuanceStoreId) {
+            if ($get['posNumber'] == $checkreceipt->IssuancePOSId)
+            {
+                if ($get['issuedDate'] == date('Y-m-d',strtotime($checkreceipt->CreatedDate)))
+                {
+                  //create app logger
+                  $get['AppLoggerId'] = $this->App_logger_model->insert_app_logger_data($data);
+                  $get['VoucherIssuanceId'] = $checkreceipt->VoucherIssuanceId;
+                  $this->reprintVoucher_Model->reprintVoucher($get,$id);
+
+                  $reprint   = $checkreceipt->VoucherIssuanceId;
+                  $status    = true;
+                  $response  = "Reprint voucher success.";
+                  $errorcode = 200;
+                } else
+                {
+                  $status     = false;
+                  $response   = 'Issued Date is not valid.';
+                  $errorcode  = 400;
+                }
+            } else
+            {
+              $status     = false;
+              $response   = 'POS Number is not valid';
+              $errorcode  = 400;
+            }
+          } else {
+            $status     = false;
+            $response   = 'Store is not valid';
+            $errorcode  = 400;
+          }
+        } else
+          {
+              $status     = false;
+              $response   = 'Receipt Number not Found';
+              $errorcode  = 400;
+          }
+        }else {
+          $status     = false;
+          $response   = 'Receipt Number has exceed the Reprint Allowed!.';
+          $errorcode  = 400;
+        }
+          } else
+          {
+            $error = $this->form_validation->error_array();
+            $salah = '';
+            foreach ($error as $keye) {
+              $salah .= $keye.'<br>';
+            }
+
+            $status    = false;
+            $response  = $salah;
+            $errorcode = 400;
+          }
+
+          $result['token']    = $data['csrf']['hash'];
+          $result['status']   = $status;
+          $result['message']  = $response;
+          $result['successreprint']  = $reprint;
+
+          echo json_encode($result);
+      }

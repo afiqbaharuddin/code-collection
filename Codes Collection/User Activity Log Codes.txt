@@ -1,0 +1,50 @@
+public function update_faq_post()
+  {
+    $import              = $this->input->post();
+    $data['AppLoggerId'] = $import['AppLoggerId'];
+    $data['UpdatedBy']   = $import['UserId'];
+    $data['UpdatedDate'] = date("Y-m-d H:i:s", time() );
+
+    if ($this->App_logger_model->update_app_logger_data($data)) {
+      $sendata = array(
+        'FaqQuestion'   => $import['FaqQuestion'],
+        'FaqAnswer'     => $import['FaqAnswer'],
+        'FaqCategoryId' => $import['FaqCategoryId'],
+        'StatusId'      => $import['StatusId'],
+      );
+
+      if ($this->Faq_model->update_faq($sendata,$import['FaqId'])) {
+        $status    = true;
+        $response  = [ ];
+        $errorcode = 200;
+        $actmsg = " update FAQ ID ".$import['FaqId'];
+      }else{
+        $status    = false;
+        $response  = [
+          "type"  => "authentication",
+          "error" => array('error' => 'Something went wrong. Please try again later.'),
+        ];
+        $errorcode = 500;
+        $actmsg = " is trying to update FAQ ID ".$import['FaqId'].". Failed.";
+      }
+    }else {
+      $status    = false;
+      $response  = [
+        "type"  => "authentication",
+        "error" => array('error' => 'Something went wrong. Please try again later.'),
+      ];
+      $errorcode = 500;
+      $actmsg = " is trying to update FAQ ID ".$import['FaqId'].". Applogger update failed.";
+    }
+    $act = [
+      'UserId'           => $import['UserId'],
+      'ActivityTypeId'   => 13,
+      'ActivityDetails'  => $import['Fullname'].$actmsg,
+      'ActivityDateTime' => date('Y-m-d h:i:s'),
+      'IpAddress'        => $import['IpAddress'],
+      'OperatingSystem'  => $import['OperatingSystem'],
+      'Browser'          => $import['Browser'],
+    ];
+    $this->Activity_model->insert_activity($act);
+
+  

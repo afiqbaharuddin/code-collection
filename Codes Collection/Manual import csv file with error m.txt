@@ -1,0 +1,277 @@
+//Manual import csv file with error message stored
+
+function import_giftvoucher_csv()
+{
+  $data = array_merge($this->global_data);
+
+  $data['IpAddress']       = $this->input->ip_address();
+  $data['OperatingSystem'] = $this->agent->platform();
+  $data['Browser']         = $this->agent->browser();
+
+  $this->load->library('csvimport');
+
+  $data['UserId']     				  = $this->session->userdata('UserId');
+
+  $array                    		= explode('.', $_FILES['file']['name']);
+  $extension                		= end($array);
+  $originalFileName         		= str_replace(' ', '_', $array[0]);
+  $newFileName              		= "upload-gift-voucher".date('YmdGis').".".$extension;
+
+  $data['CodeNumber']      			= date('YmdGis');
+  $data['NewFileName']      		= $newFileName;
+  $data['OriginalFileName'] 		= $_FILES['file']['name'];
+  $data['NewPath']          		= "uploads/import/".$newFileName;
+  $data['RequestStatusId']	    = "2";
+
+  $config['file_name']      		= $newFileName;
+  $config['upload_path']    		= "uploads/import/";
+  $config['allowed_types']  		= 'xlsx|xls|csv|txt|xltx';
+  $config['max_size']       		= '5120';
+
+  $this->load->library('upload', $config);
+  $this->upload->initialize($config);
+  $data['upload_data'] = '';
+
+  $actmsg = '';
+  $error_log = array();
+  if(isset($_FILES["file"]["tmp_name"]))
+  {
+    $path    = $_FILES["file"]["tmp_name"];
+    $csvData = $this->csvimport->parse_csv($_FILES['file']['tmp_name']);
+    $get     = $this->input->post();
+
+    if ($get['loggerid'] = $this->App_logger_model->insert_app_logger_data($data))
+    {
+      if(!empty($csvData))
+      {
+        $errorImport = '';
+        $memData     = [];
+        $csvfile     = true;
+
+        $vouchernumber = $this->gift_Model->getGiftVoucherNumber();
+        $storeid       = $this->gift_Model->getStoreId();
+
+        foreach($csvData as $row)
+        {
+
+          $searchFor = $row['VOUCHER NUMBER'];
+          $gvNumber = array_values(array_filter($vouchernumber, function($element) use($searchFor){
+            return isset($element->VouchersNumber) && $element->VouchersNumber == $searchFor;
+          }));
+
+          $searchFor = $row['ISSUE STORE'];
+          $storecode = array_values(array_filter($storeid, function($element) use($searchFor){
+            return isset($element->StoreCode) && $element->StoreCode == $searchFor;
+          }));
+
+          $searchFor   = $row['REDEEM STORE'];
+          $redeemStore = array_values(array_filter($storeid, function($element) use($searchFor){
+            return isset($element->StoreCode) && $element->StoreCode == $searchFor;
+          }));
+
+          $issuedate  = implode("-", array_reverse(explode("/", $row['ISSUE DATE'])));
+          $expirydate = implode("-", array_reverse(explode("/", $row['EXPIRY DATE'])));
+
+            if (!empty($storecode))
+            {
+              if ($storecode[0]->StoreStatusId == 1)
+              {
+                if (!empty($gvNumber))
+                {
+                  if ($row['ACTION'] == null) {
+                    $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold">
+                                        <td>'.$row['VOUCHER NUMBER'].'</td>
+                                        <td>'.$row['ISSUE STORE'].'</td>
+                                        <td>Voucher already exist. Please key in Action to update this voucher</td>
+                                      </tr>';
+                    $message = 'Some info is wrong/missing!';
+                    $csvfile = false;
+                    $actmsg  = " is trying to Import Existing Gift Voucher. Failed.";
+                  }
+                  else
+                  {
+                      if ($gvNumber[0]->VoucherStatusId == 1 || $gvNumber[0]->VoucherStatusId == 3 || $gvNumber[0]->VoucherStatusId == 10)
+                      {
+                        if ($row['ACTION'] == 'CANCEL')
+                        {
+                          $voucheractivity = [
+                            'GiftVouchersId' => $gvNumber[0]->GiftVouchersId,
+                            'CancelDate' => date('Y-m-d H:i:s'),
+                            'CancelReasons' => 3
+                          ];
+                          $giftstatus = 5;
+
+                        }
+                        elseif ($row['ACTION'] == 'BLOCK')
+                        {
+                          $voucheractivity = [
+                            'GiftVouchersId' => $gvNumber[0]->GiftVouchersId,
+                            'BlockDate' => date('Y-m-d H:i:s'),
+                            'BlockReasons' => 3
+                          ];
+                          $giftstatus = 6;
+                        }
+                        $voucherdetails = [
+                          'GiftVouchersId'  => $gvNumber[0]->GiftVouchersId,
+                          'VoucherStatusId' => $giftstatus
+                        ];
+                        $this->gift_Model->updateGift($voucherdetails);
+                        $this->gift_Model->insertGiftHistory($voucheractivity);
+                      }
+                      else
+                      {
+                        $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold">
+                                            <td>'.$row['VOUCHER NUMBER'].'</td>
+                                            <td>'.$row['ISSUE STORE'].'</td>
+                                            <td>Not allowed to override ACTION on this voucher.</td>
+                                          </tr>';
+                        $message = 'Some info is wrong/missing!';
+                        $csvfile = false;
+                        $actmsg  = " is trying to Import Existing Gift Voucher. Failed.";
+                      }
+                  }
+                }elseif ($row['BATCH NUMBER'] == null) {
+                  $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold">
+                                     <td>'.$row['VOUCHER NUMBER'].'</td>
+                                     <td>'.$row['ISSUE STORE'].'</td>
+                                     <td>Batch Number cannot be Empty!</td>
+                                   </tr>';
+                  $message = 'Some info is wrong/missing!';
+                  $csvfile = false;
+                  $actmsg  = " is trying to Import Gift Voucher without Batch Number. Failed.";
+                }else {
+                  if ($row['VOUCHER AMOUNT'] != 0 || $row['VOUCHER AMOUNT'] != "0" || $row['VOUCHER AMOUNT'] != "0.0")
+                    {
+                      if (isset($redeemStore[0])) {
+                        $redeemStore = $redeemStore[0]->StoreCode;
+                      }else {
+                        $redeemStore = '';
+                      }
+
+                      if ($row['EXPIRY DATE'] != null) {
+                        $memData[] = array(
+                            'StoreId'            => $storecode[0]->StoreId,
+                            'IssuedDate'         => date('Y-m-d',strtotime($issuedate)),
+                            'VouchersNumber'     => $row['VOUCHER NUMBER'],
+                            'VoucherValueGift'   => $row['VOUCHER AMOUNT'],
+                            'RedeemStore'        => $redeemStore,
+                            'ExpDate'            => date('Y-m-d', strtotime($expirydate)),
+                            'BatchNumber'        => $row['BATCH NUMBER'],
+                            'VoucherStatusId'    => 1,
+                            'VoucherTypeId'      => 1,
+                            'VoucherIssuanceId'  => 0,
+                            'AppLoggerId'        => $get['loggerid'],
+                          );
+                      }else {
+                        $memData[] = array(
+                          'StoreId'            => $storecode[0]->StoreId,
+                          'IssuedDate'         => date('Y-m-d', strtotime($issuedate)),
+                          'VouchersNumber'     => $row['VOUCHER NUMBER'],
+                          'VoucherIssuanceId'  => 0,
+                          'VoucherValueGift'   => $row['VOUCHER AMOUNT'],
+                          'RedeemStore'        => $redeemStore,
+                          'BatchNumber'        => $row['BATCH NUMBER'],
+                          'VoucherStatusId'    => 10,
+                          'VoucherTypeId'      => 1,
+                          'AppLoggerId'        => $get['loggerid'],
+                          );
+                      }
+                    }else {
+                      $errorImport .= '
+                                        <tr class="bg-danger text-white" style="font-weight:bold">
+                                          <td>'.$row['VOUCHER NUMBER'].'</td>
+                                          <td>'.$row['ISSUE STORE'].'</td>
+                                          <td>Not allowed to import with Voucher Amount 0.</td>
+                                        </tr>';
+                        $message = 'Imported Voucher cannot have Amount 0.';
+                        $csvfile = false;
+                        $actmsg  = " is trying to Import Vouchers with Amount RM 0. Failed.";
+                        $error_log[] = array(
+                          'voucher_number' => $row['VOUCHER NUMBER'],
+                          'error_message' => 'Not allowed to import with Voucher Amount 0.'
+                        );
+                    }
+                }
+              }
+              else
+              {
+                $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold">
+                                    <td>'.$row['VOUCHER NUMBER'].'</td>
+                                    <td>'.$row['ISSUE STORE'].'</td>
+                                    <td>Store not active</td>
+                                  </tr>';
+                $message = 'Some info is wrong/missing!';
+                $csvfile = false;
+                $actmsg  = " is trying to Import Gift Voucher. Inactive Store.";
+                $error_log[] = array(
+                  'voucher_number' => $row['VOUCHER NUMBER'],
+                  'error_message' => 'Store not active'
+                );
+              }
+            }
+            else
+            {
+              $errorImport .= '<tr class="bg-danger text-white" style="font-weight:bold">
+                                  <td>'.$row['VOUCHER NUMBER'].'</td>
+                                  <td>'.$row['ISSUE STORE'].'</td>
+                                  <td>Store not exist!</td>
+                                </tr>';
+
+              $message = 'Some info is wrong/missing!';
+              $csvfile = false;
+              $actmsg  = " is trying to Import Gift Voucher. Store not Exist.";
+              $error_log[] = array(
+                'voucher_number' => $row['VOUCHER NUMBER'],
+                'error_message' => 'Store not exist!'
+              );
+}
+        }
+
+        if (!empty($memData)) {
+          $insert = $this->gift_Model->insertImportGift($memData,$row,$gvNumber);
+        }
+
+        if (!empty($error_log)) {
+          $this->db->insert_batch('manual_import_errorlog', $error_log);
+        }
+      } else {
+          $message = 'CSV file is empty';
+          $actmsg  = " is trying to Import Gift Voucher. CSV file empty.";
+      }
+    }
+
+    if (!$this->upload->do_upload('file',$newFileName))
+    {
+      $data['invalid']              = FALSE;
+      $message = $this->upload->display_errors();
+    } else {
+      $data['invalid']              = FALSE;
+      $upload_data                  = $this->upload->data();
+      $downloadsData['file']        = $upload_data['file_name'];
+      $data['CreatedDate']          = date("Y-m-d H:i:s", time() );
+      $data['CreatedBy']            = $data['UserId'];
+      if ($csvfile == true) {
+        $message = 'File has been uploaded';
+        $actmsg  = " Successfully Import Gift Voucher.";
+      }
+    }
+
+    $act = [
+        'UserId'           => $data['UserId'],
+        'ActivityTypeId'   => 37,
+        'ActivityDetails'  => $data['Fullname'].$actmsg,
+        'ActiveDate'       => date('Y-m-d H:i:s'),
+        'IpAddress'        => $data['IpAddress'],
+        'OperatingSystem'  => $data['OperatingSystem'],
+        'Browser'          => $data['Browser'],
+      ];
+
+      $this->ActivityLog_Model->insert_activity($act);
+    }
+
+    $result['csv']          = $csvfile;
+    $result['errorimport']  = $errorImport;
+    $result['message']      = $message;
+    $result['token']        = $data['csrf']['hash'];
+    echo json_encode($result);
+  }

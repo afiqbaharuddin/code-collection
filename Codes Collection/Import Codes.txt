@@ -1,0 +1,91 @@
+CsV to database:
+
+$this->load->library('csvimport');
+
+$data['UserId']     				= $this->session->userdata('UserId');
+
+      $array                    		= explode('.', $_FILES['file']['name']);
+      $extension                		= end($array);
+      $originalFileName         		= str_replace(' ', '_', $array[0]);
+      $newFileName              		= "request_bulk_activation_".date('YmdGis').".".$extension;
+
+	  $data['CodeNumber']      			= date('YmdGis');
+      $data['NewFileName']      		= $newFileName;
+      $data['OriginalFileName'] 		= $_FILES['file']['name'];
+      $data['NewPath']          		= "uploads/bulk_activation/".$newFileName;
+      $data['RequestStatusId']	      	= "2";
+
+      $config['file_name']      		= $newFileName;
+      $config['upload_path']    		= "uploads/bulk_activation/";
+      $config['allowed_types']  		= 'xlsx|xls|csv|txt|xltx';
+      $config['max_size']       		= '5120';
+      $this->load->library('upload', $config);
+      $this->upload->initialize($config);
+      $data['upload_data'] = '';
+
+
+
+		if(isset($_FILES["file"]["tmp_name"]))
+		{
+		  $this->Activation_model->truncate();
+		  $path   = $_FILES["file"]["tmp_name"];
+
+          $csvData = $this->csvimport->parse_csv($_FILES['file']['tmp_name']);
+			if(!empty($csvData)){
+                foreach($csvData as $row){
+
+				$memData = array(
+						'CardNumber' => $row['cardno'],
+						'PromoCode' => $row['promo_code'],
+						'CardType' => $row['card_type'],
+						'InitialBalance' => $row['initial_balance'],
+						'CompanyName' => $row['company_name'],
+						'PartnerName' => $row['patner_name']
+					);
+
+					$insert = $this->Activation_model->insert($memData);
+
+					if($insert){
+	                   $insertCount++;
+	                }
+				}
+			}
+
+if (!$this->upload->do_upload('file',$newFileName)) {
+	                $data['invalid']              = FALSE;
+	                $data                         = array('msg' => $this->upload->display_errors());
+	            } else {
+	                $data['invalid']              = FALSE;
+	                $upload_data                  = $this->upload->data();
+	                $downloadsData['file']        = $upload_data['file_name'];
+	                $data['CreatedDate']          = date("Y-m-d H:i:s", time() );
+	        				$data['CreatedBy']            = $data['UserId'];
+
+	                if ($last_id = $this->Application_Logger_Model->insert_application_logger_data($data)) {
+				        $data['ApplicationLoggerId'] 	= $last_id;
+				        $BulkActivationFileId		    = $this->Activation_model->upload_file($data);
+
+				        //Get data from temp table and insert into new table
+			           foreach ($datatofilter as $row) {
+
+			            	$CardNumber     = $row->CardNumber;
+				            $PromoCode      = $row->PromoCode;
+				            $CardType       = $row->CardType;
+				            $InitialBalance = $row->InitialBalance;
+				            $CompanyName    = $row->CompanyName;
+				            $PartnerName    = $row->PartnerName;
+
+				            $copydata[] = array(
+				               // 'BulkActivationFileId' => $BulkActivationFileId,
+				            	'BulkActivationFileId' => $BulkActivationFileId,
+				                'CardNumber'           => $CardNumber,
+				                'PromoCode'            => $PromoCode,
+				                'CardType'             => $CardType,
+				                'InitialBalance'       => $InitialBalance,
+				                'CompanyName'          => $CompanyName,
+				                'PartnerName'          => $PartnerName
+							);
+						}
+	            	}
+					
+					$this->Activation_model->insert_data($copydata);
