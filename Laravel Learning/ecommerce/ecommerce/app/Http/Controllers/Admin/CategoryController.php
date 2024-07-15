@@ -41,7 +41,7 @@ class CategoryController extends Controller
         $category->meta_descrip  = $request->input('meta_description');
         
         $category->save();
-        return redirect('/dashboard')->with('status','Category Added Successfully');
+        return redirect('categories')->with('status','Category Added Successfully');
     }
 
     function edit($id){
@@ -78,5 +78,20 @@ class CategoryController extends Controller
 
         $category->update();
         return redirect('dashboard')->with('status', 'Category Updated Successfully');
+    }
+
+    function destroy($id){
+
+        $category = Category::find($id);
+        if ($category->image) {
+            $path = 'assets/uploads/category/'.$category->image;
+            if (File::exists($path)) {
+                {
+                    File::delete($path);
+                }
+            }
+            $category->delete();
+                return redirect('categories')->with('status','Category Deleted Successfully.');
+        }
     }
 }
