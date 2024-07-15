@@ -29,7 +29,7 @@
 
                     <div class="col-md-10 mb-3">
                         <label for=""><b>Description</b></label>
-                        <textarea name="description" rows="3" class="form-control custom-border" value="{{$category->description}}"></textarea>
+                        <textarea name="description" rows="3" class="form-control custom-border">{{$category->description}}</textarea>
                     </div>
 
                     <div class="col-md-6 mb-3">
