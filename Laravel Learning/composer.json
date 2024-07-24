@@ -1,0 +1,6 @@
+{
+    "require": {
+        "laravel/ui": "^3.4",
+        "maatwebsite/excel": "^3.1"
+    }
+}
