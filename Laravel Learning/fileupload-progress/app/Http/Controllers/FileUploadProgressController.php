@@ -25,6 +25,18 @@ class FileUploadProgressController extends Controller
       if ($error->fails()) {
         return response()->json(['errors'=>$error->errors()->all()]);
       }
+
+      $image = $request->file('file');
+
+      $new_name = rand().'.'.$image->getClientOriginalExtension();
+      $image->move(public_path('images'),$new_name);
+
+      $output = array(
+        'success' => 'Image Import Successfully',
+        'image'   => '<img src="/images/'.$new_name.'" class="img-thumbnail"/>'
+      );
+
+      return response()->json($output);
     }
 
     /**
