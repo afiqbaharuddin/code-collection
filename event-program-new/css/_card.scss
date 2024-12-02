@@ -1,0 +1,75 @@
+// Card 
+
+@import 'color';
+
+.card {
+    overflow: hidden;
+    background-color: $white;
+    box-shadow: 3px 3px 7px #e5e7ea, -3px -3px 7px #fdffff;
+    border-radius: 10px;
+    border: none;
+    width: 100%;
+
+    .card-header {
+        background-color: transparent;
+        padding: 1rem 1.5rem;
+    }
+
+    .card-title {
+        margin: 1rem 0;
+    }
+
+    .card-body {
+        .card-text {
+            margin-bottom: 1rem;
+        }
+    }
+
+    &.card-1 {
+        padding: 1rem;
+
+        i {
+            color: $primary;
+            font-size: 2rem;
+        }
+    }
+
+    .card-img {
+        transform: scale(1);
+        transition: 1s ease-in-out;
+    }
+
+    .card-img-overlay {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        justify-content: end;
+        color: $white;
+        position: absolute;
+        top: 300px;
+        transition: 1s ease-in-out;
+
+        .card-text {
+            opacity: 0;
+            transition: 1s ease-in-out;
+        }
+    }
+
+    &:hover {
+
+        .card-img {
+            transform: scale(1.05);
+            transition: 1s ease-in-out;
+        }
+
+        .card-img-overlay {
+            top: 0;
+            transition: 1s ease-in-out;
+
+            .card-text {
+                opacity: 1;
+                transition: 1s ease-in-out;
+            }
+        }
+    }
+}

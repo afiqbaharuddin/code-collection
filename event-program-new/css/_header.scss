@@ -1,0 +1,210 @@
+// Header
+
+@import 'color';
+
+header {
+
+    nav {
+        transition: .5s ease-in-out;
+        padding: .75rem 0 !important;
+
+        &.green {
+            background-color: #00a77c;
+
+            .btn-menu {
+                #line1,
+                #line2 {
+                    background-color: white;
+                }
+            }
+
+            .navbar-nav {
+                .nav-item {
+                    .nav-link {
+                        color: $white;
+                    }
+                }
+            }
+        }
+
+        &.transparent {
+            background-color: transparent;
+
+            .navbar-nav {
+                .nav-item {
+                    .nav-link {
+                        color: $white;
+                    }
+                }
+            }
+        }
+
+        &.dark {
+            background: $base;
+        }
+
+        &.light {
+            background-color: #fafafa;
+            color: $base;
+        }
+
+        &.light-grey {
+            background-color: #f1f1f1;
+        }
+
+        .navbar-brand {      
+                 
+            img {
+                height: 50px;
+                width: auto;
+            }
+        }
+
+        .btn-menu {
+            border: none;
+            padding: 0;
+            font-size: 30px;
+            color: white;
+            text-align: right;
+
+            #line1 {
+                width: 45px;
+                height: 3px;
+                background-color: white;
+                margin-bottom: .5rem;
+                transition: .5s ease-in-out;
+
+            }
+
+            #line2 {
+                width: 30px;
+                height: 3px;
+                background-color: white;
+                margin-right: 0;
+                transition: .5s ease-in-out;
+                
+            }
+
+            &.dark {
+                #line1,
+                #line2 {
+                    background-color: $base;
+                }
+            }
+
+            &:hover {
+                #line1,
+                #line2 {
+                    width: 45px;
+                    transition: .5s ease-in-out;
+                }
+            }
+        }
+
+        .navbar-collapse {
+            flex-grow: 0;
+            
+            .navbar-nav {
+                .nav-item {
+                    padding: 0 1rem;
+    
+                    &:last-child {
+                        padding-right: 0;
+                    }
+    
+                    .nav-link {
+                        color: $base;
+                        font-weight: 500;
+
+                        &.active {
+                            color: $synergy;
+                        }
+                    }
+    
+                    .dropdown-menu {
+                        background-color: #fafafa;
+                        border-color: #f1f1f1;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.offcanvas {
+    transition: .5s ease-in-out;
+    background: linear-gradient(135.31deg, rgba(241, 241, 241, 0.75) 20.23%, rgba(241, 243, 246, 0.75) 80.12%), url('/images/bg/textured-background-white-tone.jpg') bottom;
+    transition: .5s ease-in-out;
+
+    .offcanvas-header {
+        justify-content: space-between;
+        img {
+            height: 45px;
+            width: auto;
+        }
+    }
+
+    .offcanvas-body {
+        padding: 2rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        
+        ul {
+            list-style: none;
+
+            li {
+                padding: 1rem 0;
+                border-top: 1px solid $grey;
+                width: 100%;
+
+                a {
+                    font-size: 24px;
+                    font-weight: 500;
+                    transition: .5s ease-in-out;
+
+                    &.active {
+                        border-bottom: 3px solid $green-primary;
+                    }
+
+                    &:hover {
+                        color: $green-primary;
+                        transition: .5s ease-in-out;
+                    }
+                }
+
+                &:first-child {
+                    border-top: none;
+                }
+            }
+            &.w-dropdown {
+                background-color: transparent;
+                border: none;
+
+                li {
+                    padding: .3rem 0;
+                    border-top: none;
+    
+                    a {
+                        font-size: 20px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 991px) { 
+    header {
+        nav {
+            .navbar-brand {
+                #odesi {
+                    height: 44px;
+                }
+                #synergy {
+                    height: 32px;
+                }
+            }
+        }
+    }
+}

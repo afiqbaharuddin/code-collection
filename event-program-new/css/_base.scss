@@ -1,0 +1,114 @@
+/*
+CSS - Basic v1.0.0
+
+---------- TABLE OF CONTENTS ----------
+
+1. GOOGLE FONTS IMPORT
+2. BOOTSTRAP FRAMEWORK
+3. BOOTSTRAP OVERRIDES
+
+---------- TABLE OF CONTENTS ----------
+*/
+
+
+// 1. GOOGLE FONTS IMPORT
+// @import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700");
+
+// 2. BOOTSTRAP FRAMEWORK
+
+    // Bootstrap v4.1.1 (https://getbootstrap.com/)
+    //  * Copyright 2011-2018 The Bootstrap Authors
+    //  * Copyright 2011-2018 Twitter, Inc.
+    //  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+
+
+@import 'color';
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; 
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Mulish', sans-serif;
+    font-size: 14px Im !important;
+    letter-spacing: .5px;
+    font-weight: 300;
+    line-height: 1.5;
+    color: $base;
+    text-align: left;
+    // background-color: #f1f1f1; 
+    // background: url('/images/bg/textured-background-white-tone.jpg') center no-repeat fixed;
+    // background-size: cover;
+    // background: linear-gradient(135.31deg, rgba(241, 241, 241, 0.75) 20.23%, rgba(241, 243, 246, 0.75) 80.12%), url('/images/bg/textured-background-white-tone.jpg') bottom;
+    background-color: #fdfdfd;
+    transition: .5s ease-in-out;
+
+    &.dark {
+        // background: url('/images/bg/background-flip.png') no-repeat top center, linear-gradient(blue, black) ;
+        background: #0a2c3d;
+        // background-size: cover;
+        color: $white;
+        transition: .5s ease-in-out;
+
+        header {
+            nav {
+                background-color: #0a2c3d;
+
+                .navbar-brand {
+                    .light {
+                        display: none;
+                    }
+                    .dark {
+                        display: inline;
+                    }
+                }
+
+                .nav-link {
+                    color: $white !important;
+                }
+            }
+        }
+    }
+
+    &.light-grey {
+        background-color: #eef6f4;
+        transition: .5s ease-in-out;
+    }}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0; 
+    font-weight: 700;
+}
+  
+p {
+    margin: 0;
+}
+
+a {
+    color: $base;
+    text-decoration: none;
+    background-color: transparent;
+
+    &:hover {
+      color: $primary-semi;
+      text-decoration: none; 
+    }
+}
+
+img {
+    vertical-align: middle;
+}
+
+.text-primary {
+    color: $green-primary !important;
+}
+    

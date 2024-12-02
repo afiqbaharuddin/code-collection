@@ -1,0 +1,49 @@
+// Footer 
+
+@import 'color';
+
+footer {
+    background-color: #f1f1f1;
+    // background: linear-gradient(135.31deg, #0F5156 20.23%, #1A755A 80.12%);
+    // color: $white !important;
+    // border-top: 1px solid #c4c4c4;
+
+    .initiated,
+    .partner {
+        img {
+            height: 65px;
+            width: auto;
+        }
+    }
+
+    img {
+        height: auto;
+        width: 300px;
+        margin-bottom: 20px;
+    }
+
+    .light-source {
+        text-align: center;
+        
+        img {
+            height: 140px;
+            width: auto;
+        }
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    a {
+        // color: $white;
+
+        &:hover {
+            color: #313131;
+            font-weight: 500;
+            transition: .5s ease-in-out;
+        }
+    }
+
+}

@@ -1,0 +1,87 @@
+// Button
+
+@import 'color';
+
+button:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.btn {
+    // padding: 12px 24px !important;
+    font-size: 14px;
+    font-weight: 600;
+    // border-radius: 50px;
+    transition: box-shadow 1s;
+
+    &.btn-primary {
+        background: $green-primary;
+        border: 1px solid $green-primary;
+        color: $white;
+        transition: .5s ease-in-out;
+        box-shadow: 5px 5px 6px #e5e5e5, -5px -5px 6px #fdfdfd;
+
+        &:hover {
+            background-color: $synergy;
+            transition: .5s ease-in-out;
+        }
+    }
+
+    &.btn-dark {
+        background-color: $base;
+        border: 1px solid $base;
+        color: $white;
+    }
+
+    &.btn-outline-primary {
+        background: transparent;
+        border: 2px solid $green-primary;
+        color: $green-primary;
+    }
+
+    &.btn-border-dark {
+        background: transparent;
+        border: 2px solid $base;
+        color: $base;
+    }
+
+    &.btn-grey {
+        color: $base;
+        background: #f1f1f1;
+        border: #f1f1f1 solid 1px;
+        box-shadow: 5px 5px 6px #e5e5e5, -5px -5px 6px #fdfdfd;
+        transition: .5s ease-in-out;
+
+        &:hover {
+            box-shadow:  5px 5px 5px #ececec, -5px -5px 5px #f6f6f6;
+            transition: .5s ease-in-out;
+        }
+    }
+
+    // &:hover {
+    //     box-shadow: inset 7px 7px 14px #e7e9ec, inset -7px -7px 14px #fbfdff;
+    // }
+
+    &.btn-light {
+        color: $green-primary;
+    }
+}
+
+.btn-scroll {
+    background-color: $base;
+    color: $grey;
+    border: none;
+    position: fixed;
+    right: 100px;
+    bottom: 100px;
+    opacity: 0.2;
+    transition: .5s ease-in-out;
+    border-radius: 5px;
+    width: auto;
+
+    &:hover {
+        opacity: 0.6;
+        transition: .5s ease-in-out;
+        color: $white;
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "require": {
+        "phpoffice/phpspreadsheet": "^1.29",
+        "phpmailer/phpmailer": "~5.2",
+	"faisalman/simple-excel-php" : "0.3.*",
+        "endroid/qr-code": "^5.1"
+    }
+}
