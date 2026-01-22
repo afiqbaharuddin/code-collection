@@ -1,0 +1,325 @@
+:root {
+    --primary-color: #06b6d4; /* Cyan 500 */
+    --primary-hover: #0891b2; /* Cyan 600 */
+    --secondary-color: #6366f1; /* Indigo 500 */
+    --accent-color: #f43f5e; /* Rose 500 */
+    --text-color: #1f2937;
+    --text-light: #6b7280;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Header */
+.header-section {
+    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    color: white;
+    padding: 6rem 0;
+    margin-bottom: 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.1) 0%, transparent 60%);
+}
+
+.header-section h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin-bottom: 0.75rem;
+    color: white;
+    position: relative;
+}
+
+.header-section p {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    position: relative;
+    font-weight: 300;
+}
+
+/* Blog Container */
+.blog-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Post Card */
+.post-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 3rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.post-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.post-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.post-content-wrapper {
+    padding: 3rem;
+}
+
+.post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+
+.meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 9999px;
+    font-weight: 600;
+}
+
+.meta-author {
+    background-color: #e0f2fe; /* Light Blue */
+    color: #0369a1;
+}
+
+.meta-date {
+    background-color: #f1f5f9; /* Slate */
+    color: #475569;
+}
+
+.meta-comments {
+    background-color: #ffe4e6; /* Light Rose */
+    color: #be123c;
+}
+
+.meta-pill i {
+    margin-right: 0;
+}
+
+.post-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 1.5rem;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    background: linear-gradient(to right, #0f172a, #334155);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.post-body {
+    color: #374151;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+/* Comments Section */
+.comments-section {
+    background-color: #f8fafc;
+    border-top: 1px solid var(--border-color);
+    padding: 3rem;
+}
+
+.comments-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #1e293b;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.comment-item {
+    background: white;
+    border: none;
+    border-left: 4px solid var(--border-color);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 0 8px 8px 0;
+    padding: 1.5rem;
+    transition: all 0.2s;
+}
+
+.comment-item:hover {
+    border-left-color: var(--primary-color);
+    transform: translateX(4px);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.comment-author {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 1.05rem;
+}
+
+.comment-date {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    background: #f1f5f9;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+}
+
+.comment-text {
+    font-size: 1rem;
+    color: #4b5563;
+    line-height: 1.6;
+}
+/* Form Styles */
+.add-comment-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+    margin-top: 3rem;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background: #f8fafc;
+}
+
+.form-control:focus {
+    background: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1);
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%);
+    color: white;
+    font-weight: 600;
+    padding: 0.875rem 2rem;
+    border-radius: 8px;
+    border: none;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.875rem;
+    width: 100%;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+}
+
+/* Floating Admin Link */
+.admin-link {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: linear-gradient(135deg, #111827 0%, #374151 100%);
+    color: white;
+    height: 4rem;
+    min-width: 4rem;
+    padding: 0;
+    border-radius: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    z-index: 50;
+    font-size: 1.25rem;
+}
+
+.admin-text {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.admin-link:hover {
+    padding: 0 1.5rem;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.admin-link:hover .admin-text {
+    max-width: 100px;
+    opacity: 1;
+    margin-left: 0.75rem;
+}
+
+/* Alerts */
+#alertContainer {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+    max-width: 400px;
+}
+
+/* Honeypot - hide from users, but not from bots */
+.honeypot-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
